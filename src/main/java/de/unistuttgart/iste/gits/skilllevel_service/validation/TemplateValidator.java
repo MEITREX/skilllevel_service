@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.validation;
+package de.unistuttgart.iste.gits.skilllevel_service.validation;
 
 import de.unistuttgart.iste.gits.generated.dto.Template;
 import org.springframework.stereotype.Component;

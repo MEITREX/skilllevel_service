@@ -32,7 +32,7 @@ The classes that are in this package should not be deleted in the actual microse
 
 This package contains the GraphQL controllers (and other types of controllers if needed). The GraphQL controllers are annotated with the `@Controller` annotation. Controllers contain no business logic, but only delegate the requests to the service layer. They handle the "technical stuff" of the request.
 
-More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/template/controller/package-info.java).
+More information can be found in the [Controller package](src/main/java/de/unistuttgart/iste/gits/skilllevel_service/controller/package-info.java).
 
 ### Dapr package
 
@@ -54,19 +54,19 @@ The DTOs are used to transfer data between the GraphQL controller and the servic
 
 This package is used for exception handling. Note that with GraphQL, the exceptions are not thrown directly, but are wrapped in a `GraphQLException`, which is different that from the usual Spring Boot approach.
 
-More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/template/exception/package-info.java).
+More information can be found in the [Exception package](src/main/java/de/unistuttgart/iste/gits/skilllevel_service/exception/package-info.java).
 
 ### Persistence package
 
 This package contains all classes that are used to persist data in the database. This includes the DAOs (data access objects), the mapping logic between entities and DTOs, as well as the repositories.
 
-More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/template/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/template/persistence/repository/package-info.java).
+More information can be found in the [Dao package](src/main/java/de/unistuttgart/iste/gits/skilllevel_service/persistence/dao/package-info.java) and the [Repository package](src/main/java/de/unistuttgart/iste/gits/skilllevel_service/persistence/repository/package-info.java).
 
 ### Service package
 
 This package contains all classes that are used to handle the business logic of the microservice. Services are annotated with the `@Service` annotation. Services contain only business logic and delegate the data access to the persistence layer (repositories). 
 
-More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/template/service/package-info.java).
+More information can be found in the [Service package](src/main/java/de/unistuttgart/iste/gits/skilllevel_service/service/package-info.java).
 
 ### Validation package
 
@@ -81,14 +81,14 @@ If these directives are not sufficient, the validation logic can also be placed 
 
 After cloning the repository, you need to do the following steps:
 - [ ] Setup the gradle files correctly. This means
-  - [ ] Change the project name in the `settings.gradle` file
-  - [ ] Change the package name in the `build.gradle` file (there is a TODO comment)
-  - [ ] Change the sonar project key in the `build.gradle` file (should be IT-REX-Platform_repository_name)
+  - [X] Change the project name in the `settings.gradle` file
+  - [X] Change the package name in the `build.gradle` file (there is a TODO comment)
+  - [X] Change the sonar project key in the `build.gradle` file (should be IT-REX-Platform_repository_name)
   - [ ] Add/Remove dependencies in the `build.gradle` file
-- [ ] Rename the package in the `src/main/java` folder to  a more suitable name (should be the same as the package name in the `build.gradle` file)
-- [ ] Remove the package-info.java files in the `src/main/java` folder (or update with the microservice specific information)
-- [ ] Update the application.properties file in the `src/main/resources` folder (check the TODOS in the file)
-- [ ] Change the ports and name of the database in the docker-compose.yml (see wiki on how to)
+- [X] Rename the package in the `src/main/java` folder to  a more suitable name (should be the same as the package name in the `build.gradle` file)
+- [X] Remove the package-info.java files in the `src/main/java` folder (or update with the microservice specific information)
+- [X] Update the application.properties file in the `src/main/resources` folder (check the TODOS in the file)
+- [X] Change the ports and name of the database in the docker-compose.yml (see wiki on how to)
 - [ ] Define the GraphQL schema in the `src/main/resources/schema.graphqls` file
 - [ ] Create a new database
 <!-- TODO there probably more TODOs -->
@@ -96,9 +96,9 @@ After cloning the repository, you need to do the following steps:
 
 After creating a new service you need to do the following:
 - [ ] Add the following to the service repository secrets on Github
-  - [ ] SPRING_DATASOURCE_URL  
-  - [ ] SPRING_DATASOURCE_USERNAME
-  - [ ] SPRING_DATASOURCE_PASSWORD
+  - [X] SPRING_DATASOURCE_URL  
+  - [X] SPRING_DATASOURCE_USERNAME
+  - [X] SPRING_DATASOURCE_PASSWORD
 - [ ] Add the repository to sonarcloud, follow the instructions for extra configuration, unselect automatic analysis and choose github actions, only the first step needs to be completed
 - [ ] Add SONAR_TOKEN to the service repository secrets on Github (this requires you to have admin permissions on sonarcloud) 
 

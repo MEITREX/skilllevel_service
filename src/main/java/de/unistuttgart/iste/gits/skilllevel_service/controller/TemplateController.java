@@ -1,7 +1,7 @@
-package de.unistuttgart.iste.gits.template.controller;
+package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
 import de.unistuttgart.iste.gits.generated.dto.Template;
-import de.unistuttgart.iste.gits.template.service.TemplateService;
+import de.unistuttgart.iste.gits.skilllevel_service.service.TemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.QueryMapping;

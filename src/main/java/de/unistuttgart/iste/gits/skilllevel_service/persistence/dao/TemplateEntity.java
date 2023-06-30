@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.template.persistence.dao;
+package de.unistuttgart.iste.gits.skilllevel_service.persistence.dao;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
