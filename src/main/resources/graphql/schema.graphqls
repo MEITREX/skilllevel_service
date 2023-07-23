@@ -1,16 +1,96 @@
-# schema file of the microservice
+type Query {
+  """
+  Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
+  """
+  userSkillLevels(courseId: UUID!, chapterId: UUID!): SkillLevels!
 
-# TODO define data types, queries and mutations
-# this can be done in a separate files as long as they are in this folder and
-# end with .graphqls
+  """
+  Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
+  """
+  skillLevelsForUser(userId: UUID!, courseId: UUID!, chapterId: UUID!): SkillLevels!
 
+  """
+  Get the total skill points for a chapter of a course.
+  """
+  chapterTotalSkillPoints(courseId: UUID!, chapterId: UUID!): Int!
 
-# example
-type Template {
-  id: ID!
-  name: String!
+  """
+  Get the total skill points for a course.
+  """
+  courseTotalSkillPoints(courseId: UUID!): Int!
+
+  """
+  Get the total skill points for the whole course, aggregating all chapters.
+  """
+  wholeCourseTotalSkillPoints(courseId: UUID!): Int!
 }
 
-type Query {
-  templates: [Template]
+type Mutation {
+  """
+  Update the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
+  """
+  updateSkillLevels(courseId: UUID!, chapterId: UUID!, levels: SkillLevelInput!): SkillLevels!
+
+  """
+  Manually update the skill levels of a user for all skill types (Bloom taxonomy) in a chapter of a course.
+  """
+  manualUpdateSkillLevels(userId: UUID!, courseId: UUID!, chapterId: UUID!, levels: SkillLevelInput!): SkillLevels!
+}
+
+"""
+Represents the skill levels for a user in all skill types (Bloom taxonomy) for a chapter of a course.
+"""
+type SkillLevels {
+  """
+  The ID of the user.
+  """
+  userId: UUID!
+  """
+  The ID of the course.
+  """
+  courseId: UUID!
+  """
+  The ID of the chapter.
+  """
+  chapterId: UUID!
+  """
+  The logs for skill level changes.
+  """
+  logs: [SkillLevelLog!]!
+}
+
+"""
+An object containing skill levels for all skill types (Bloom taxonomy) for a user in a chapter of a course.
+"""
+input SkillLevelInput {
+  """
+  The skill level of the user for the skill type "Remember".
+  """
+  remember: Int!
+  """
+  The skill level of the user for the skill type "Understand".
+  """
+  understand: Int!
+  """
+  The skill level of the user for the skill type "Apply".
+  """
+  apply: Int!
+  """
+  The skill level of the user for the skill type "Analyze".
+  """
+  analyze: Int!
+}
+
+"""
+Represents a log entry for a skill level change.
+"""
+type SkillLevelLog {
+  """
+  The date when the skill level was updated.
+  """
+  date: DateTime!
+  """
+  The skill level after the update.
+  """
+  level: Int!
 }
