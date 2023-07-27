@@ -1,96 +1,110 @@
 type Query {
-  """
-  Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
-  """
-  userSkillLevels(courseId: UUID!, chapterId: UUID!): SkillLevels!
+"""
+Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
+If chapterId is null, then the skill levels for the course are returned.
+"""
+userSkillLevels(courseId: UUID!, chapterId: UUID): SkillLevels!
 
-  """
-  Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
-  """
-  skillLevelsForUser(userId: UUID!, courseId: UUID!, chapterId: UUID!): SkillLevels!
-
-  """
-  Get the total skill points for a chapter of a course.
-  """
-  chapterTotalSkillPoints(courseId: UUID!, chapterId: UUID!): Int!
-
-  """
-  Get the total skill points for a course.
-  """
-  courseTotalSkillPoints(courseId: UUID!): Int!
-
-  """
-  Get the total skill points for the whole course, aggregating all chapters.
-  """
-  wholeCourseTotalSkillPoints(courseId: UUID!): Int!
-}
-
-type Mutation {
-  """
-  Update the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
-  """
-  updateSkillLevels(courseId: UUID!, chapterId: UUID!, levels: SkillLevelInput!): SkillLevels!
-
-  """
-  Manually update the skill levels of a user for all skill types (Bloom taxonomy) in a chapter of a course.
-  """
-  manualUpdateSkillLevels(userId: UUID!, courseId: UUID!, chapterId: UUID!, levels: SkillLevelInput!): SkillLevels!
+"""
+Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
+If chapterId is null, then the skill levels for the course are returned.
+"""
+skillLevelsForUser(userId: UUID!, courseId: UUID!, chapterId: UUID): SkillLevels!
 }
 
 """
-Represents the skill levels for a user in all skill types (Bloom taxonomy) for a chapter of a course.
+The four skill level of a user.
 """
 type SkillLevels {
   """
-  The ID of the user.
+  remember represents how much user remember the concept
   """
-  userId: UUID!
+  remember: SkillLevel!
   """
-  The ID of the course.
+  understand represents how well the user understands learned content.
   """
-  courseId: UUID!
+  understand: SkillLevel!
+
   """
-  The ID of the chapter.
+  apply represents the how well user applies the learned concept during assessment.
   """
-  chapterId: UUID!
+  apply: SkillLevel!
   """
-  The logs for skill level changes.
+  apply is how much user can evaluate information and draw conclusions
   """
-  logs: [SkillLevelLog!]!
+  analyze: SkillLevel!
+}
+"""
+The skill level of a user.
+"""
+type SkillLevel {
+  """
+  The value of the skill level.
+  levels are between 0 and 100.
+  """
+  value: Int!
+  """
+  A log of the changes to the skill level
+  """
+  log: [SkillLevelLogItem!]!
 }
 
 """
-An object containing skill levels for all skill types (Bloom taxonomy) for a user in a chapter of a course.
+An item in the skill level change log.
 """
-input SkillLevelInput {
+type SkillLevelLogItem {
   """
-  The skill level of the user for the skill type "Remember".
-  """
-  remember: Int!
-  """
-  The skill level of the user for the skill type "Understand".
-  """
-  understand: Int!
-  """
-  The skill level of the user for the skill type "Apply".
-  """
-  apply: Int!
-  """
-  The skill level of the user for the skill type "Analyze".
-  """
-  analyze: Int!
-}
-
-"""
-Represents a log entry for a skill level change.
-"""
-type SkillLevelLog {
-  """
-  The date when the skill level was updated.
+  The date when the skill level changed.
   """
   date: DateTime!
   """
-  The skill level after the update.
+  The difference between the previous and the new skill level.
   """
-  level: Int!
+  difference: Int!
+  """
+  The old skill level.
+  """
+  oldValue: Int!
+  """
+  The new skill level.
+  """
+  newValue: Int!
+  """
+  The reason why the skill level has changed.
+  """
+  reason: SkillLevelChangeReason!
+  """
+  The ids of the chapters that are associated with the change.
+  """
+  associatedChapterIds: [UUID!]!
+}
+"""
+The reason why the skill level has changed.
+"""
+enum SkillLevelChangeReason {
+  """
+  The user failed in an assessment, resulting in a decrease in skill levels.
+  """
+  ASSESSMENT_FAILED,
+  """
+  The user learned from a new assessment or repeated an already done assessment,
+  resulting in an increase in skill levels.
+  """
+  ASSESSMENT_LEARNING,
+  """
+  The user repeated an already done assessment, resulting in an increase in skill levels.
+  """
+  ASSESSMENT_REPEATING,
+  """
+  The user used hints while attempting an assessment, resulting in a smaller increase in skill levels.
+  """
+  ASSESSMENT_WITH_HINTS,
+  """
+  The user's skill level change depends on the correctness of their responses in the assessment.
+  """
+  ASSESSMENT_CORRECTNESS,
+  """
+  The user's skill level change depends on the time taken to complete a timed assessment.
+  """
+  TIMED_ASSESSMENT_TIME_TAKEN,
 }
