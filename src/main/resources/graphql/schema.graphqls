@@ -1,16 +1,98 @@
-# schema file of the microservice
+type Query {
+"""
+Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
+If chapterId is null, then the skill levels for the course are returned.
+"""
+userSkillLevels(courseId: UUID!, chapterId: UUID): SkillLevels!
 
-# TODO define data types, queries and mutations
-# this can be done in a separate files as long as they are in this folder and
-# end with .graphqls
-
-
-# example
-type Template {
-  id: ID!
-  name: String!
+"""
+Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
+If chapterId is null, then the skill levels for the course are returned.
+"""
+skillLevelsForUser(userId: UUID!, courseId: UUID!, chapterId: UUID): SkillLevels!
 }
 
-type Query {
-  templates: [Template]
+"""
+The four skill level of a user.
+"""
+type SkillLevels {
+  """
+  remember represents how much user remember the concept
+  """
+  remember: SkillLevel!
+  """
+  understand represents how well the user understands learned content.
+  """
+  understand: SkillLevel!
+
+  """
+  apply represents the how well user applies the learned concept during assessment.
+  """
+  apply: SkillLevel!
+  """
+  apply is how much user can evaluate information and draw conclusions
+  """
+  analyze: SkillLevel!
+}
+"""
+The skill level of a user.
+"""
+type SkillLevel {
+  """
+  The value of the skill level.
+  levels are between 0 and 100.
+  """
+  value: Int!
+  """
+  A log of the changes to the skill level
+  """
+  log: [SkillLevelLogItem!]!
+}
+
+"""
+An item in the skill level change log.
+"""
+type SkillLevelLogItem {
+  """
+  The date when the skill level changed.
+  """
+  date: DateTime!
+  """
+  The difference between the previous and the new skill level.
+  """
+  difference: Int!
+  """
+  The old skill level.
+  """
+  oldValue: Int!
+  """
+  The new skill level.
+  """
+  newValue: Int!
+  """
+  The reason why the skill level has changed.
+  """
+  reason: SkillLevelChangeReason!
+  """
+  The ids of the contents that are associated with the change.
+  """
+  associatedContentIds: [UUID!]!
+}
+"""
+The reason why the skill level has changed.
+"""
+enum SkillLevelChangeReason {
+  """
+  The user failed in an assessment, resulting in a decrease in skill levels.
+  """
+  ASSESSMENT_FAILED,
+  """
+  The user learned from a new assessment or repeated an already done assessment,
+  resulting in an increase in skill levels.
+  """
+  ASSESSMENT_LEARNED,
+  """
+  The user repeated an already done assessment, resulting in an increase in skill levels.
+  """
+  ASSESSMENT_REVIEWED,
 }
