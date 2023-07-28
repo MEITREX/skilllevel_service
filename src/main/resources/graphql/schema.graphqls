@@ -95,16 +95,5 @@ enum SkillLevelChangeReason {
   The user repeated an already done assessment, resulting in an increase in skill levels.
   """
   ASSESSMENT_REPEATING,
-  """
-  The user used hints while attempting an assessment, resulting in a smaller increase in skill levels.
-  """
-  ASSESSMENT_WITH_HINTS,
-  """
-  The user's skill level change depends on the correctness of their responses in the assessment.
-  """
-  ASSESSMENT_CORRECTNESS,
-  """
-  The user's skill level change depends on the time taken to complete a timed assessment.
-  """
-  TIMED_ASSESSMENT_TIME_TAKEN,
+
 }
