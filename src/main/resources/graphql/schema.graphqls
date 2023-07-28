@@ -90,10 +90,10 @@ enum SkillLevelChangeReason {
   The user learned from a new assessment or repeated an already done assessment,
   resulting in an increase in skill levels.
   """
-  ASSESSMENT_LEARNING,
+  ASSESSMENT_LEARNED,
   """
   The user repeated an already done assessment, resulting in an increase in skill levels.
   """
-  ASSESSMENT_REPEATING,
+  ASSESSMENT_REVIEWED,
 
 }
