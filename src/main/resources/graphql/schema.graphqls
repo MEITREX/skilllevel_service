@@ -95,5 +95,4 @@ enum SkillLevelChangeReason {
   The user repeated an already done assessment, resulting in an increase in skill levels.
   """
   ASSESSMENT_REVIEWED,
-
 }
