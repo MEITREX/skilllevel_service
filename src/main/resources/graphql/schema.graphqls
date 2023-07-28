@@ -74,9 +74,9 @@ type SkillLevelLogItem {
   """
   reason: SkillLevelChangeReason!
   """
-  The ids of the chapters that are associated with the change.
+  The ids of the contents that are associated with the change.
   """
-  associatedChapterIds: [UUID!]!
+  associatedContentIds: [UUID!]!
 }
 """
 The reason why the skill level has changed.
