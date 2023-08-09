@@ -24,6 +24,31 @@ public class ContentServiceClient {
     @Value("${content_service.url}")
     private String contentServiceUrl;
 
+    public UUID getChapterIdOfContent(UUID contentId) {
+        try {
+            WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
+
+            GraphQlClient client = HttpGraphQlClient.builder(webClient).build();
+
+            String query = """
+                    query($contentId: UUID!) {
+                        contentsByIds(ids: [$contentId]) {
+                            chapterId
+                        }
+                    }
+                    """;
+
+            return client.document(query)
+                    .variable("contentId", contentId)
+                    .retrieve("contentsByIds[0].chapterId").toEntity(UUID.class)
+                    .retry(RETRY_COUNT)
+                    .block();
+
+        } catch (Exception e) {
+            throw new ContentServiceConnectionException("Error while fetching contents from content service", e);
+        }
+    }
+
     /**
      * Calls the content service to get the contents for a list of chapter ids.
      *

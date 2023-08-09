@@ -21,18 +21,18 @@ public class SkillLevelController {
     private final SkillLevelService skilllevelService;
 
     @QueryMapping
-    public SkillLevels userSkillLevels(@Argument UUID courseId, @Argument UUID chapterId, @ContextValue LoggedInUser currentUser) {
-        return skilllevelService.getSkillLevels(courseId, chapterId,currentUser.getId());
+    public SkillLevels userSkillLevels(@Argument UUID chapterId, @ContextValue LoggedInUser currentUser) {
+        return skilllevelService.getSkillLevels(chapterId, currentUser.getId());
     }
 
     @QueryMapping
-    public SkillLevels skillLevelsForUser(@Argument UUID courseId, @Argument UUID userId, @Argument UUID chapterId) {
-        return skilllevelService.getSkillLevels(courseId, userId, chapterId);
+    public SkillLevels skillLevelsForUser(@Argument UUID chapterId, @Argument UUID userId) {
+        return skilllevelService.getSkillLevels(chapterId, userId);
     }
 
     @MutationMapping
-    public SkillLevels recalculateLevels(@Argument UUID courseId, @Argument UUID userId, @Argument UUID chapterId) {
-        return skilllevelService.recalculateLevels(courseId, userId, chapterId);
+    public SkillLevels recalculateLevels(@Argument UUID chapterId, @Argument UUID userId) {
+        return skilllevelService.recalculateLevels(chapterId, userId);
     }
 
 

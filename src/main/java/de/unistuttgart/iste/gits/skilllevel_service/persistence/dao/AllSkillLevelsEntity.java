@@ -38,8 +38,7 @@ public class AllSkillLevelsEntity {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PrimaryKey implements Serializable {
-        private UUID courseId;
-        private UUID userId;
         private UUID chapterId;
+        private UUID userId;
     }
 }
