@@ -20,14 +20,14 @@ public class SkillLevelCalculator {
     private static final double MIN_TIME_MODIFIER = 0.5;
 
     public AllSkillLevelsEntity recalculateLevels(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, int chapterCount) {
-        return calculate(allSkillLevelsEntity, contents, chapterCount);
+        return calculateSkillLevels(allSkillLevelsEntity, contents, chapterCount);
     }
 
     public AllSkillLevelsEntity calculateOnContentWorkedOn(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, UserProgressLogEvent event, int chapterCount) {
-        return calculate(allSkillLevelsEntity, contents, chapterCount);
+        return calculateSkillLevels(allSkillLevelsEntity, contents, chapterCount);
     }
 
-    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, int chapterCount) {
+    private AllSkillLevelsEntity calculateSkillLevels(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, int chapterCount) {
         SkillLevelEntity rememberLevel = allSkillLevelsEntity.getRemember();
         SkillLevelEntity understandLevel = allSkillLevelsEntity.getUnderstand();
         SkillLevelEntity applyLevel = allSkillLevelsEntity.getApply();
