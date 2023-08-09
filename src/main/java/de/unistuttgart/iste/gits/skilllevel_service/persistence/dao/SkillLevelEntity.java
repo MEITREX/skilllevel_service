@@ -22,11 +22,12 @@ public class SkillLevelEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private int value;
+    private float value;
 
     @OneToMany(cascade = CascadeType.ALL)
     @OrderBy("date DESC")
     @Builder.Default
     private List<SkillLevelLogEntry> log = new ArrayList<>();
+
 
 }

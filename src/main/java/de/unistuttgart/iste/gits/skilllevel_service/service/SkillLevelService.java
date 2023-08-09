@@ -24,44 +24,37 @@ public class SkillLevelService {
     private final CourseServiceClient courseServiceClient;
     private final ContentServiceClient contentServiceClient;
 
-    private final RememberLevelCalculator rememberLevelCalculator;
-    private final UnderstandlevelCalculator understandlevelCalculator;
-    private final ApplyLevelCalculator applyLevelCalculator;
-    private final AnalyzeLevelCalculator analyzeLevelCalculator;
-
+    private final SkillLevelCalculator rememberLevelCalculator;
 
     /**
-     * Recalculates the skill level for a given user and course.
+     * Recalculates the skill levels for a given user and course.
      *
-     * @param courseId  the id of the course
-     * @param userId    the id of the user
-     * @param chapterId the id of the chapter
-     * @return the recalculated skill levels
+     * @param courseId the id of the course
+     * @param userId   the id of the user
+     * @param chapterId  the id of the chapter
+     * @return the recalculated reward scores
      */
-    public SkillLevels recalculateSkills(UUID courseId, UUID userId, UUID chapterId) {
+    public SkillLevels recalculateLevels(UUID courseId, UUID userId, UUID chapterId) {
         AllSkillLevelsEntity allSkillLevelsEntity = skillLevelsRepository
-                .findById(new AllSkillLevelsEntity.PrimaryKey(courseId, userId, chapterId))
-                .orElseGet(() -> initializeSkillLevels(courseId, userId, chapterId));
+                .findById(new AllSkillLevelsEntity.PrimaryKey(courseId, userId,chapterId))
+                .orElseGet(() -> initializeSkillLevels(courseId, userId,chapterId));
 
         List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
 
         List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, chapterIds);
 
-        allSkillLevelsEntity
-                .setRemember(rememberLevelCalculator.recalculateLevel(allSkillLevelsEntity.getRemember(), contents));
-        allSkillLevelsEntity
-                .setUnderstand(understandlevelCalculator.recalculateLevel(allSkillLevelsEntity.getUnderstand(), contents));
-        allSkillLevelsEntity
-                .setApply(applyLevelCalculator.recalculateLevel(allSkillLevelsEntity.getApply(), contents));
-        allSkillLevelsEntity
-                .setAnalyze(analyzeLevelCalculator.recalculateLevel(allSkillLevelsEntity.getAnalyze(), contents));
+        try {
+            allSkillLevelsEntity
+                    .setRemember(rememberLevelCalculator.recalculateLevel(allSkillLevelsEntity, contents));
 
+        } catch (Exception e) {
+            throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
+        }
 
         var result = skillLevelsRepository.save(allSkillLevelsEntity);
 
         return mapper.entityToDto(result);
     }
-
     public AllSkillLevelsEntity getAllSkillLevelsEntity(UUID courseId, UUID userId, UUID chapterId) {
         return skillLevelsRepository
                 .findById(new AllSkillLevelsEntity.PrimaryKey(courseId, userId, chapterId))
@@ -71,7 +64,6 @@ public class SkillLevelService {
     public SkillLevels getSkillLevels(UUID courseId, UUID userId, UUID chapterId) {
         return mapper.entityToDto(getAllSkillLevelsEntity(courseId, userId, chapterId));
     }
-
     public AllSkillLevelsEntity initializeSkillLevels(UUID courseId, UUID userId, UUID chapterId) {
         AllSkillLevelsEntity allSkillLevelsEntity = new AllSkillLevelsEntity();
         allSkillLevelsEntity.setId(new AllSkillLevelsEntity.PrimaryKey(courseId, userId, chapterId));
