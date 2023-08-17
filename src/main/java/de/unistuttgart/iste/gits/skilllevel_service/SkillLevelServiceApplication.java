@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * This is the entry point of the application.
  */
 @SpringBootApplication
-@EnableScheduling
 public class SkillLevelServiceApplication {
 
     public static void main(String[] args) {
