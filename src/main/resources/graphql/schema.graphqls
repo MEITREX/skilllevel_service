@@ -3,13 +3,24 @@ type Query {
 Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
 If chapterId is null, then the skill levels for the course are returned.
 """
-userSkillLevels(courseId: UUID!, chapterId: UUID): SkillLevels!
+userSkillLevels(chapterId: UUID): SkillLevels!
 
 """
 Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
 If chapterId is null, then the skill levels for the course are returned.
 """
-skillLevelsForUser(userId: UUID!, courseId: UUID!, chapterId: UUID): SkillLevels!
+skillLevelsForUser(chapterId: UUID, userId: UUID!): SkillLevels!
+}
+type Mutation {
+  """
+  ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
+
+  Triggers the recalculation of the skill level of the user.
+  This is done automatically at some time in the night.
+
+  The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+  """
+  recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
 }
 
 """
@@ -42,7 +53,7 @@ type SkillLevel {
   The value of the skill level.
   levels are between 0 and 100.
   """
-  value: Int!
+  value: Float!
   """
   A log of the changes to the skill level
   """
@@ -60,39 +71,17 @@ type SkillLevelLogItem {
   """
   The difference between the previous and the new skill level.
   """
-  difference: Int!
+  difference: Float!
   """
   The old skill level.
   """
-  oldValue: Int!
+  oldValue: Float!
   """
   The new skill level.
   """
-  newValue: Int!
-  """
-  The reason why the skill level has changed.
-  """
-  reason: SkillLevelChangeReason!
+  newValue: Float!
   """
   The ids of the contents that are associated with the change.
   """
   associatedContentIds: [UUID!]!
-}
-"""
-The reason why the skill level has changed.
-"""
-enum SkillLevelChangeReason {
-  """
-  The user failed in an assessment, resulting in a decrease in skill levels.
-  """
-  ASSESSMENT_FAILED,
-  """
-  The user learned from a new assessment or repeated an already done assessment,
-  resulting in an increase in skill levels.
-  """
-  ASSESSMENT_LEARNED,
-  """
-  The user repeated an already done assessment, resulting in an increase in skill levels.
-  """
-  ASSESSMENT_REVIEWED,
 }
