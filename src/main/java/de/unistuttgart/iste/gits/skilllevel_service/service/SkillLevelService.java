@@ -31,7 +31,7 @@ public class SkillLevelService {
      * @return the recalculated reward scores
      */
     public SkillLevels recalculateLevels(UUID chapterId, UUID userId) {
-        //try {
+        try {
             AllSkillLevelsEntity entity = getOrInitializeSkillLevels(chapterId, userId);
 
             skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
@@ -39,9 +39,9 @@ public class SkillLevelService {
             AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
 
             return mapper.entityToDto(result);
-        /*} catch (Exception e) {
+        } catch (Exception e) {
             throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
-        }*/
+        }
     }
 
     public SkillLevels getSkillLevels(UUID chapterId, UUID userId) {
