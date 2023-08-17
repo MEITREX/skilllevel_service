@@ -1,40 +1,57 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service.calculation;
 
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.Assessment;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
 import de.unistuttgart.iste.gits.generated.dto.SkillType;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelLogEntry;
+import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class SkillLevelCalculator {
 
-    private static final double MAX_CORRECTNESS_MODIFIER = 1.1;
-    private static final double MIN_CORRECTNESS_MODIFIER = 0.6;
-    private static final double MAX_TIME_MODIFIER = 1.5;
-    private static final double MIN_TIME_MODIFIER = 0.5;
+    private final ContentServiceClient contentServiceClient;
 
-    public AllSkillLevelsEntity recalculateLevels(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, int chapterCount) {
-        return calculate(allSkillLevelsEntity, contents, chapterCount);
+    /**
+     * Recalculates the skill levels for a given user and chapter of a course.
+     *
+     * @param chapterId The ID of the chapter
+     * @param userId The ID of the user
+     * @param allSkillLevelsEntity The current skill levels of the user
+     * @return The recalculated skill levels. The entity needs to be stored in the DB by the caller!
+     */
+    public AllSkillLevelsEntity recalculateLevels(UUID chapterId, UUID userId,
+                                                  AllSkillLevelsEntity allSkillLevelsEntity) {
+        List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, List.of(chapterId));
+
+        // set all skill levels to 0 and clear their logs. We're recalculating everything from scratch
+        allSkillLevelsEntity.setAnalyze(new SkillLevelEntity(0));
+        allSkillLevelsEntity.setRemember(new SkillLevelEntity(0));
+        allSkillLevelsEntity.setUnderstand(new SkillLevelEntity(0));
+        allSkillLevelsEntity.setApply(new SkillLevelEntity(0));
+
+        return calculate(allSkillLevelsEntity, contents);
     }
 
-    public AllSkillLevelsEntity calculateOnContentWorkedOn(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, UserProgressLogEvent event, int chapterCount) {
-        return calculate(allSkillLevelsEntity, contents, chapterCount);
-    }
-
-    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents, int chapterCount) {
-        SkillLevelEntity rememberLevel = allSkillLevelsEntity.getRemember();
-        SkillLevelEntity understandLevel = allSkillLevelsEntity.getUnderstand();
-        SkillLevelEntity applyLevel = allSkillLevelsEntity.getApply();
-        SkillLevelEntity analyzeLevel = allSkillLevelsEntity.getAnalyze();
+    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents) {
+        if(contents.isEmpty()) {
+            return allSkillLevelsEntity;
+        }
 
         // find out the total amount of skill points in the current chapter
-        double totalSkillPoints = 0;
+        float totalSkillPoints = 0;
         for(Content content : contents) {
             if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
 
@@ -44,48 +61,142 @@ public class SkillLevelCalculator {
         for (Content content : contents) {
             if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
 
-            ProgressLogItem logItem = content.getUserProgressData().getLog().get(content.getUserProgressData().getLog().size() - 1);
-            double skillPoints = assessment.getAssessmentMetadata().getSkillPoints();
-            double modifiedSkillPoints = applyModifiers(logItem, skillPoints);
-
-            double relativeSkillPoints = (100.0 / chapterCount) * (modifiedSkillPoints / totalSkillPoints);
+            List<ProgressLogItem> log = content.getUserProgressData().getLog();
 
             SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
+            SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
 
-            switch(skillType) {
-                case UNDERSTAND -> understandLevel.setValue(understandLevel.getValue() + (float) relativeSkillPoints);
-                case REMEMBER -> rememberLevel.setValue(rememberLevel.getValue() + (float) relativeSkillPoints);
-                case APPLY -> applyLevel.setValue(applyLevel.getValue() + (float) relativeSkillPoints);
-                case ANALYSE -> analyzeLevel.setValue(analyzeLevel.getValue() + (float) relativeSkillPoints);
+            // if nothing in the log (i.e. the user has not worked on this content), skip it
+            if(log.isEmpty()) continue;
+
+            List<AssessmentRepetition> repetitionResults = calculateSkillPointsOfRepetitions(assessment);
+
+            float highestSkillPointsTillNow = 0;
+            // go over all repetitions the user has made on this content
+            for(AssessmentRepetition currentRepetition : repetitionResults) {
+                // each chapter has a maximum of 10 skill levels, so we need to scale the earned skill points relative
+                // to the total skill points of the chapter times the 10 levels to calculate how many levels the user
+                // will gain
+                float relativeSkillPoints = 10.f * (currentRepetition.earnedSkillPoints / totalSkillPoints);
+
+                // only add this repetition to the skill level log if the user has improved compared to previous ones
+                if(relativeSkillPoints > highestSkillPointsTillNow) {
+                    List<UUID> contentIds = new ArrayList<>(1);
+                    contentIds.add(content.getId());
+
+                    skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
+                            .date(currentRepetition.timestamp)
+                            .difference(relativeSkillPoints - highestSkillPointsTillNow)
+                            .associatedContentIds(contentIds)
+                            .build());
+
+                    highestSkillPointsTillNow = relativeSkillPoints;
+                }
             }
+        }
+
+        // go through all 4 types of skill levels and sort their log entries by date
+        for(SkillType skillType : SkillType.values())  {
+            SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
+
+            List<SkillLevelLogEntry> sortedLog = new ArrayList<>(skillLevelToModify.getLog().stream()
+                    .sorted(Comparator.comparing(SkillLevelLogEntry::getDate))
+                    .toList());
+
+            // calculate the value differences between the log entries
+            float skillLevel = 0;
+            for(SkillLevelLogEntry currentLogEntry : sortedLog) {
+                skillLevel += currentLogEntry.getDifference();
+                currentLogEntry.setNewValue(skillLevel);
+            }
+
+            skillLevelToModify.setLog(sortedLog);
+
+            if(!sortedLog.isEmpty()) {
+                skillLevelToModify.setValue(sortedLog.get(sortedLog.size() - 1).getNewValue());
+            } else {
+                skillLevelToModify.setValue(0);
+            }
+
         }
 
         return allSkillLevelsEntity;
     }
 
-    private double applyModifiers(ProgressLogItem logItem, double skillPoints) {
-        double modifiers = 1.0;
+    private SkillLevelEntity getSkillLevelEntityBySkillType(AllSkillLevelsEntity allSkillLevelsEntity,
+                                                            SkillType skillType) {
+        return switch (skillType) {
+            case UNDERSTAND -> allSkillLevelsEntity.getUnderstand();
+            case REMEMBER -> allSkillLevelsEntity.getRemember();
+            case APPLY -> allSkillLevelsEntity.getApply();
+            case ANALYSE -> allSkillLevelsEntity.getAnalyze();
+        };
+    }
 
-        // Apply modifiers for hints used
-        modifiers *= Math.max(1.0 - 0.1 * logItem.getHintsUsed(), 0.6);
+    private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(Assessment assessment) {
+        List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
+        List<AssessmentRepetition> result = new ArrayList<>(log.size());
+        // go over the log and for each repetition, check how many points the user earned for it
+        // at the time of completion
+        for(int i = 0; i < log.size(); i++) {
+            ProgressLogItem currentLogItem = log.get(i);
 
-        // Apply modifier for correctness
-        double correctnessModifier = Math.min(MAX_CORRECTNESS_MODIFIER,
-                Math.max(MIN_CORRECTNESS_MODIFIER, 0.1 * logItem.getCorrectness() + 0.6));
-        modifiers *= correctnessModifier;
+            float modifiers = 1.0f;
 
-        // Apply modifier for time
-         /*
-    The time modifier is calculated as the ratio of the time limit of the assessment to the actual time taken by the student.
-    It's limited within a certain range to prevent extreme adjustments.
-    If the student completes the assessment faster than the time limit, the time modifier will be greater than 1.0, effectively increasing the skill points they earn.
-    If the student takes longer than the time limit, the time modifier will be less than 1.0, decreasing the skill points they earn.
-    The calculated time modifier is then multiplied with the skill points to adjust the final skill points earned for that assessment.*/
+            // -10% for each hint used, but never less than 60%
+            modifiers *= Math.max(1.0 - 0.1 * currentLogItem.getHintsUsed(), 0.6);
 
-        /*double timeModifier = Math.min(MAX_TIME_MODIFIER,
-                Math.max(MIN_TIME_MODIFIER, event.getTimeToComplete() / (double) event.getTimeTaken()));
-        modifiers *= timeModifier;*/
+            modifiers *= currentLogItem.getCorrectness();
 
-        return skillPoints * modifiers;
+            // we now need to figure out how many repetitions of the content the student has done previously to the
+            // current one. However, a repetition should only be counted if there is a large enough time gap between
+            // the repetitions.
+            int countedRepetitions = 0;
+            OffsetDateTime lastCountedRepetitionTime = null;
+            // loop over the previous log items
+            for (int j = 0; j <= i; j++) {
+                ProgressLogItem otherLogItem = log.get(j);
+                if(lastCountedRepetitionTime == null) {
+                    // for the first time the content was done, we don't need to check the time gap
+                    lastCountedRepetitionTime = otherLogItem.getTimestamp();
+                    countedRepetitions++;
+                } else {
+                    // learning interval is doubled for each repetition
+                    Duration minimumLearningInterval = Duration.ofDays(
+                            (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, countedRepetitions - 1))
+                    );
+                    // if the time gap between the current log item and the previous one is large enough, count it
+                    // as a repetition
+                    if(otherLogItem.getTimestamp().isAfter(lastCountedRepetitionTime.plus(minimumLearningInterval))) {
+                        lastCountedRepetitionTime = otherLogItem.getTimestamp();
+                        countedRepetitions++;
+                    }
+                }
+            }
+
+            // 3 repetitions needed for full points.
+            // TODO: This is hard-coded for now, but should be configurable per assessment in the future
+            final int repetitionsNeeded = 3;
+            modifiers *= (float)Math.min(countedRepetitions, repetitionsNeeded) / repetitionsNeeded;
+
+            // TODO: Add time modifier. For this there is still an implementation of time limits missing in the
+            // content service
+
+            result.add(new AssessmentRepetition(
+                    currentLogItem.getTimestamp(),
+                    modifiers * assessment.getAssessmentMetadata().getSkillPoints()));
+        }
+
+        return result;
+    }
+
+    private static class AssessmentRepetition {
+        public final OffsetDateTime timestamp;
+        public final float earnedSkillPoints;
+
+        public AssessmentRepetition(OffsetDateTime timestamp, float earnedSkillPoints) {
+            this.timestamp = timestamp;
+            this.earnedSkillPoints = earnedSkillPoints;
+        }
     }
 }

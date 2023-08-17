@@ -21,9 +21,6 @@ public class SkillLevelService {
 
     private final AllSkillLevelsRepository skillLevelsRepository;
     private final SkillLevelMapper mapper;
-    private final CourseServiceClient courseServiceClient;
-    private final ContentServiceClient contentServiceClient;
-
     private final SkillLevelCalculator skillLevelCalculator;
 
     /**
@@ -34,52 +31,41 @@ public class SkillLevelService {
      * @return the recalculated reward scores
      */
     public SkillLevels recalculateLevels(UUID chapterId, UUID userId) {
-        AllSkillLevelsEntity allSkillLevelsEntity = skillLevelsRepository
-                .findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId))
-                .orElseGet(() -> initializeSkillLevels(chapterId, userId));
+        //try {
+            AllSkillLevelsEntity entity = getOrInitializeSkillLevels(chapterId, userId);
 
-        List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, List.of(chapterId));
+            skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
 
-        if(contents.isEmpty()) {
-            return mapper.entityToDto(allSkillLevelsEntity);
-        }
+            AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
 
-        UUID courseId = courseServiceClient.getCourseIdForContent(contents.get(0).getId());
-        List<UUID> chapterIds = courseServiceClient.getChapterIds(courseId);
-
-        try {
-            skillLevelCalculator.recalculateLevels(allSkillLevelsEntity, contents, chapterIds.size());
-        } catch (Exception e) {
+            return mapper.entityToDto(result);
+        /*} catch (Exception e) {
             throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
-        }
-
-        var result = skillLevelsRepository.save(allSkillLevelsEntity);
-
-        return mapper.entityToDto(result);
-    }
-
-    public AllSkillLevelsEntity getAllSkillLevelsEntity(UUID chapterId, UUID userId) {
-        return skillLevelsRepository
-                .findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId))
-                .orElseGet(() -> initializeSkillLevels(chapterId, userId));
+        }*/
     }
 
     public SkillLevels getSkillLevels(UUID chapterId, UUID userId) {
-        return mapper.entityToDto(getAllSkillLevelsEntity(chapterId, userId));
+        return mapper.entityToDto(getOrInitializeSkillLevels(chapterId, userId));
     }
 
-    public AllSkillLevelsEntity initializeSkillLevels(UUID userId, UUID chapterId) {
-        AllSkillLevelsEntity allSkillLevelsEntity = new AllSkillLevelsEntity();
-        allSkillLevelsEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
-        allSkillLevelsEntity.setRemember(initializeSkillLevelEntity(0));
-        allSkillLevelsEntity.setUnderstand(initializeSkillLevelEntity(0));
-        allSkillLevelsEntity.setApply(initializeSkillLevelEntity(0));
-        allSkillLevelsEntity.setAnalyze(initializeSkillLevelEntity(0));
+    private AllSkillLevelsEntity getOrInitializeSkillLevels(UUID chapterId, UUID userId) {
+        Optional<AllSkillLevelsEntity> entity = skillLevelsRepository
+                .findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
 
-        return skillLevelsRepository.save(allSkillLevelsEntity);
+        if(entity.isPresent())
+            return entity.get();
+
+        AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+        newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
+        newEntity.setRemember(initializeSkillLevelEntity(0));
+        newEntity.setUnderstand(initializeSkillLevelEntity(0));
+        newEntity.setApply(initializeSkillLevelEntity(0));
+        newEntity.setAnalyze(initializeSkillLevelEntity(0));
+
+        return skillLevelsRepository.save(newEntity);
     }
 
-    public SkillLevelEntity initializeSkillLevelEntity(int initialValue) {
+    private SkillLevelEntity initializeSkillLevelEntity(int initialValue) {
         SkillLevelEntity skillLevelEntity = new SkillLevelEntity();
         skillLevelEntity.setValue(initialValue);
         skillLevelEntity.setLog(new ArrayList<>());

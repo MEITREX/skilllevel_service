@@ -20,17 +20,14 @@ public class AllSkillLevelsEntity {
 
     @EmbeddedId
     private PrimaryKey id;
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity remember;
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity understand;
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity apply;
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity analyze;
 
     @Embeddable

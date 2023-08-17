@@ -1,6 +1,5 @@
 package de.unistuttgart.iste.gits.skilllevel_service.persistence.dao;
 
-import de.unistuttgart.iste.gits.generated.dto.SkillLevelChangeReason;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +17,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class SkillLevelLogEntry {
 
+    public float getOldValue() {
+        return newValue - difference;
+    }
+
     @Id
     @GeneratedValue
     private UUID id;
@@ -26,17 +29,11 @@ public class SkillLevelLogEntry {
     private OffsetDateTime date;
 
     @Column(nullable = false)
-    private int difference;
+    private float difference;
 
     @Column(nullable = false)
-    private int oldValue;
+    private float newValue;
 
-    @Column(nullable = false)
-    private int newValue;
-
-    @Column(nullable = false)
-    private SkillLevelChangeReason reason;
-
-    @ElementCollection
+    @Column(columnDefinition = "UUID[]", nullable = false)
     private List<UUID> associatedContentIds;
 }

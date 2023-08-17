@@ -3,7 +3,6 @@ package de.unistuttgart.iste.gits.skilllevel_service.controller;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
-import de.unistuttgart.iste.gits.skilllevel_service.service.CourseServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
@@ -27,7 +26,7 @@ public class SubscriptionController {
 
     @Topic(name = "user-progress-updated", pubsubName = "gits")
     @PostMapping(path = "/skilllevel-service/user-progress-pubsub")
-    public Mono<SkillLevels> onUserProgress(@RequestBody(required = false)CloudEvent<UserProgressLogEvent> cloudEvent,
+    public Mono<SkillLevels> onUserProgress(@RequestBody CloudEvent<UserProgressLogEvent> cloudEvent,
                                             @RequestHeader Map<String, String> headers) {
         log.info("Received event: {}", cloudEvent.getData());
 

@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service.calculation;
 
 /**
- * Exception thrown when an error occurs during the calculation of a reward score.
+ * Exception thrown when an error occurs during the calculation of a skill level.
  */
 public class SkillLevelCalculationException extends RuntimeException {
 

@@ -53,7 +53,7 @@ type SkillLevel {
   The value of the skill level.
   levels are between 0 and 100.
   """
-  value: Int!
+  value: Float!
   """
   A log of the changes to the skill level
   """
@@ -71,39 +71,17 @@ type SkillLevelLogItem {
   """
   The difference between the previous and the new skill level.
   """
-  difference: Int!
+  difference: Float!
   """
   The old skill level.
   """
-  oldValue: Int!
+  oldValue: Float!
   """
   The new skill level.
   """
-  newValue: Int!
-  """
-  The reason why the skill level has changed.
-  """
-  reason: SkillLevelChangeReason!
+  newValue: Float!
   """
   The ids of the contents that are associated with the change.
   """
   associatedContentIds: [UUID!]!
-}
-"""
-The reason why the skill level has changed.
-"""
-enum SkillLevelChangeReason {
-  """
-  The user failed in an assessment, resulting in a decrease in skill levels.
-  """
-  ASSESSMENT_FAILED,
-  """
-  The user learned from a new assessment or repeated an already done assessment,
-  resulting in an increase in skill levels.
-  """
-  ASSESSMENT_LEARNED,
-  """
-  The user repeated an already done assessment, resulting in an increase in skill levels.
-  """
-  ASSESSMENT_REVIEWED,
 }
