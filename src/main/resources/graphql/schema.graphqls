@@ -1,16 +1,16 @@
 type Query {
-"""
-Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
-If chapterId is null, then the skill levels for the course are returned.
-"""
-userSkillLevels(chapterId: UUID): SkillLevels!
-
-"""
-Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
-If chapterId is null, then the skill levels for the course are returned.
-"""
-skillLevelsForUser(chapterId: UUID, userId: UUID!): SkillLevels!
+  """
+  Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
+  If chapterId is null, then the skill levels for the course are returned.
+  """
+  userSkillLevels(chapterId: UUID): SkillLevels!
+  """
+  Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
+  If chapterId is null, then the skill levels for the course are returned.
+  """
+  skillLevelsForUser(chapterId: UUID, userId: UUID!): SkillLevels!
 }
+
 type Mutation {
   """
   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
@@ -35,7 +35,6 @@ type SkillLevels {
   understand represents how well the user understands learned content.
   """
   understand: SkillLevel!
-
   """
   apply represents the how well user applies the learned concept during assessment.
   """
@@ -45,6 +44,7 @@ type SkillLevels {
   """
   analyze: SkillLevel!
 }
+
 """
 The skill level of a user.
 """
