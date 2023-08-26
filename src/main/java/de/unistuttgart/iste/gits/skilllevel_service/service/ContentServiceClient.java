@@ -8,9 +8,7 @@ import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Client for the content service, allowing to query contents with user progress data.
@@ -50,14 +48,14 @@ public class ContentServiceClient {
     }
 
     /**
-     * Calls the content service to get the contents for a list of chapter ids.
+     * Calls the content service to get the assessments of a particular chapter. Note that this method only returns
+     * generic assessment objects, not the specific types like flashcard sets or quizzes.
      *
      * @param userId     the user id
-     * @param chapterIds the list of chapter ids
-     * @return the list of contents
+     * @param chapterId the chapter id
+     * @return the list of assessments
      */
-    public List<Content> getContentsWithUserProgressData(UUID userId,
-                                                         List<UUID> chapterIds) {
+    public List<GenericAssessmentResponse> getAssessmentsOfChapter(UUID userId, UUID chapterId) {
         try {
             WebClient webClient = WebClient.builder().baseUrl(contentServiceUrl).build();
 
@@ -66,27 +64,33 @@ public class ContentServiceClient {
             String query = """
                     query($userId: UUID!, $chapterIds: [UUID!]!) {
                         contentsByChapterIds(chapterIds: $chapterIds) {
-                            id
-                            metadata {
-                                name
-                                tagNames
-                                suggestedDate
-                                type
-                                chapterId
-                                rewardPoints
-                            }
-                            progressDataForUser(userId: $userId) {
-                                userId
-                                contentId
-                                learningInterval
-                                nextLearnDate
-                                lastLearnDate
-                                log {
-                                    timestamp
-                                    success
-                                    correctness
-                                    hintsUsed
-                                    timeToComplete
+                            ...on Assessment {
+                                id
+                                metadata {
+                                    name
+                                    tagNames
+                                    suggestedDate
+                                    type
+                                    chapterId
+                                    rewardPoints
+                                }
+                                assessmentMetadata {
+                                    skillType
+                                    skillPoints
+                                }
+                                progressDataForUser(userId: $userId) {
+                                    userId
+                                    contentId
+                                    learningInterval
+                                    nextLearnDate
+                                    lastLearnDate
+                                    log {
+                                        timestamp
+                                        success
+                                        correctness
+                                        hintsUsed
+                                        timeToComplete
+                                    }
                                 }
                             }
                         }
@@ -94,41 +98,73 @@ public class ContentServiceClient {
                                     
                     """;
 
-            log.info("Sending contentsByChapterIds query to course service with chapterIds {}", chapterIds);
+            log.info("Sending contentsByChapterIds query to course service with chapterId " + chapterId);
 
             // we must use media content here because the content type is an interface
             // that cannot be used for deserialization
-            List<ContentWithUserProgressData[]> result = graphQlClient.document(query)
+            List<GenericAssessmentResponse> result = graphQlClient.document(query)
                     .variable("userId", userId)
-                    .variable("chapterIds", chapterIds)
-                    .retrieve("contentsByChapterIds")
-                    .toEntityList(ContentWithUserProgressData[].class)
+                    .variable("chapterIds", List.of(chapterId))
+                    .retrieve("contentsByChapterIds[0]")
+                    .toEntityList(GenericAssessmentResponse.class)
                     .retry(RETRY_COUNT)
                     .block();
 
             if (result == null) {
-                return List.of();
+                return Collections.emptyList();
             }
-            return result.stream()
-                    .flatMap(Arrays::stream)
-                    .map(ContentWithUserProgressData::toContent)
-                    .toList();
+            return result;
         } catch (Exception e) {
             throw new ContentServiceConnectionException("Error while fetching contents from content service", e);
         }
     }
 
+    public static class GenericAssessmentResponse {
+        private UUID id;
+        private ContentMetadata metadata;
+        private AssessmentMetadata assessmentMetadata;
+        private UserProgressData progressDataForUser;
 
-    // helper class to deserialize the result of the graphql query
-    private record ContentWithUserProgressData(UUID id, ContentMetadata metadata,
-                                               UserProgressData progressDataForUser) {
+        public GenericAssessmentResponse() {
+        }
 
-        private Content toContent() {
-            return MediaContent.builder()
-                    .setId(id)
-                    .setMetadata(metadata)
-                    .setUserProgressData(progressDataForUser)
-                    .build();
+        public GenericAssessmentResponse(UUID id,
+                                         ContentMetadata metadata,
+                                         AssessmentMetadata assessmentMetadata,
+                                         UserProgressData progressDataForUser) {
+            this.id = id;
+            this.metadata = metadata;
+            this.assessmentMetadata = assessmentMetadata;
+            this.progressDataForUser = progressDataForUser;
+        }
+
+        public AssessmentMetadata getAssessmentMetadata() {
+            return assessmentMetadata;
+        }
+
+        public UUID getId() {
+            return id;
+        }
+
+        public ContentMetadata getMetadata() {
+            return metadata;
+        }
+
+        public UserProgressData getProgressDataForUser() {
+            return progressDataForUser;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            GenericAssessmentResponse that = (GenericAssessmentResponse) o;
+            return Objects.equals(id, that.id) && Objects.equals(metadata, that.metadata) && Objects.equals(assessmentMetadata, that.assessmentMetadata) && Objects.equals(progressDataForUser, that.progressDataForUser);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, metadata, assessmentMetadata, progressDataForUser);
         }
     }
 

@@ -9,6 +9,7 @@ import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEn
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelLogEntry;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -34,7 +35,8 @@ public class SkillLevelCalculator {
      */
     public AllSkillLevelsEntity recalculateLevels(UUID chapterId, UUID userId,
                                                   AllSkillLevelsEntity allSkillLevelsEntity) {
-        List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, List.of(chapterId));
+        List<ContentServiceClient.GenericAssessmentResponse> assessments =
+                contentServiceClient.getAssessmentsOfChapter(userId, chapterId);
 
         // set all skill levels to 0 and clear their logs. We're recalculating everything from scratch
         allSkillLevelsEntity.setAnalyze(new SkillLevelEntity(0));
@@ -42,26 +44,23 @@ public class SkillLevelCalculator {
         allSkillLevelsEntity.setUnderstand(new SkillLevelEntity(0));
         allSkillLevelsEntity.setApply(new SkillLevelEntity(0));
 
-        return calculate(allSkillLevelsEntity, contents);
+        return calculate(allSkillLevelsEntity, assessments);
     }
 
-    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents) {
-        if(contents.isEmpty()) {
+    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
+                                           List<ContentServiceClient.GenericAssessmentResponse> assessments) {
+        if(assessments.isEmpty()) {
             return allSkillLevelsEntity;
         }
 
         // find out the total amount of skill points in the current chapter
         float totalSkillPoints = 0;
-        for(Content content : contents) {
-            if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
-
+        for(ContentServiceClient.GenericAssessmentResponse assessment : assessments) {
             totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
         }
 
-        for (Content content : contents) {
-            if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
-
-            List<ProgressLogItem> log = content.getUserProgressData().getLog();
+        for (ContentServiceClient.GenericAssessmentResponse assessment : assessments) {
+            List<ProgressLogItem> log = assessment.getProgressDataForUser().getLog();
 
             SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
             SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
@@ -82,7 +81,7 @@ public class SkillLevelCalculator {
                 // only add this repetition to the skill level log if the user has improved compared to previous ones
                 if(relativeSkillPoints > highestSkillPointsTillNow) {
                     List<UUID> contentIds = new ArrayList<>(1);
-                    contentIds.add(content.getId());
+                    contentIds.add(assessment.getId());
 
                     skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
                             .date(currentRepetition.timestamp)
@@ -133,8 +132,9 @@ public class SkillLevelCalculator {
         };
     }
 
-    private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(Assessment assessment) {
-        List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
+    private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(
+            ContentServiceClient.GenericAssessmentResponse assessment) {
+        List<ProgressLogItem> log = assessment.getProgressDataForUser().getLog();
         List<AssessmentRepetition> result = new ArrayList<>(log.size());
         // go over the log and for each repetition, check how many points the user earned for it
         // at the time of completion
