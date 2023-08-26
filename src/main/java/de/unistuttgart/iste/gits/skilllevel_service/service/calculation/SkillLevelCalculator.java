@@ -1,7 +1,5 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service.calculation;
 
-import de.unistuttgart.iste.gits.generated.dto.Assessment;
-import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
 import de.unistuttgart.iste.gits.generated.dto.SkillType;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
@@ -9,7 +7,6 @@ import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEn
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelLogEntry;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
