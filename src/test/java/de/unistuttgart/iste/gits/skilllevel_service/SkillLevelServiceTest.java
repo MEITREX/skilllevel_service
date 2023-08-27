@@ -72,7 +72,7 @@ class SkillLevelServiceTest {
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
         UUID contentId1 = UUID.randomUUID();
         UUID contentId2 = UUID.randomUUID();
-        List<Assessment> contents = List.of(
+        List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId1)
                         .setMetadata(ContentMetadata.builder()
@@ -149,14 +149,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getAssessmentsOfChapter(any(), any())).thenReturn(
-                contents.stream()
-                        .map(x -> new ContentServiceClient.GenericAssessmentResponse(
-                                x.getId(),
-                                x.getMetadata(),
-                                x.getAssessmentMetadata(),
-                                x.getUserProgressData()))
-                        .toList());
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -186,7 +179,7 @@ class SkillLevelServiceTest {
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
         UUID contentId1 = UUID.randomUUID();
         UUID contentId2 = UUID.randomUUID();
-        List<Assessment> contents = List.of(
+        List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId1)
                         .setMetadata(ContentMetadata.builder()
@@ -278,14 +271,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getAssessmentsOfChapter(any(), any())).thenReturn(
-                contents.stream()
-                        .map(x -> new ContentServiceClient.GenericAssessmentResponse(
-                                x.getId(),
-                                x.getMetadata(),
-                                x.getAssessmentMetadata(),
-                                x.getUserProgressData()))
-                        .toList());
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -316,7 +302,7 @@ class SkillLevelServiceTest {
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
         UUID contentId = UUID.randomUUID();
 
-        List<Assessment> contents = List.of(
+        List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId)
                         .setMetadata(ContentMetadata.builder()
@@ -371,14 +357,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getAssessmentsOfChapter(any(), any())).thenReturn(
-                contents.stream()
-                        .map(x -> new ContentServiceClient.GenericAssessmentResponse(
-                                x.getId(),
-                                x.getMetadata(),
-                                x.getAssessmentMetadata(),
-                                x.getUserProgressData()))
-                        .toList());
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -412,7 +391,7 @@ class SkillLevelServiceTest {
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
         UUID contentId = UUID.randomUUID();
 
-        List<Assessment> contents = List.of(
+        List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId)
                         .setMetadata(ContentMetadata.builder()
@@ -467,14 +446,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getAssessmentsOfChapter(any(), any())).thenReturn(
-                contents.stream()
-                        .map(x -> new ContentServiceClient.GenericAssessmentResponse(
-                                x.getId(),
-                                x.getMetadata(),
-                                x.getAssessmentMetadata(),
-                                x.getUserProgressData()))
-                        .toList());
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 

@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service.calculation;
 
+import de.unistuttgart.iste.gits.generated.dto.Assessment;
+import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
 import de.unistuttgart.iste.gits.generated.dto.SkillType;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
@@ -32,8 +34,8 @@ public class SkillLevelCalculator {
      */
     public AllSkillLevelsEntity recalculateLevels(UUID chapterId, UUID userId,
                                                   AllSkillLevelsEntity allSkillLevelsEntity) {
-        List<ContentServiceClient.GenericAssessmentResponse> assessments =
-                contentServiceClient.getAssessmentsOfChapter(userId, chapterId);
+        List<Content> contents =
+                contentServiceClient.getContentsOfChapter(userId, chapterId);
 
         // set all skill levels to 0 and clear their logs. We're recalculating everything from scratch
         allSkillLevelsEntity.setAnalyze(new SkillLevelEntity(0));
@@ -41,23 +43,29 @@ public class SkillLevelCalculator {
         allSkillLevelsEntity.setUnderstand(new SkillLevelEntity(0));
         allSkillLevelsEntity.setApply(new SkillLevelEntity(0));
 
-        return calculate(allSkillLevelsEntity, assessments);
+        return calculate(
+                allSkillLevelsEntity,
+                contents.stream()
+                    .filter(x -> x instanceof Assessment)
+                    .map(x -> (Assessment)x)
+                    .toList()
+        );
     }
 
     private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
-                                           List<ContentServiceClient.GenericAssessmentResponse> assessments) {
+                                           List<Assessment> assessments) {
         if(assessments.isEmpty()) {
             return allSkillLevelsEntity;
         }
 
         // find out the total amount of skill points in the current chapter
         float totalSkillPoints = 0;
-        for(ContentServiceClient.GenericAssessmentResponse assessment : assessments) {
+        for(Assessment assessment : assessments) {
             totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
         }
 
-        for (ContentServiceClient.GenericAssessmentResponse assessment : assessments) {
-            List<ProgressLogItem> log = assessment.getProgressDataForUser().getLog();
+        for (Assessment assessment : assessments) {
+            List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
 
             SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
             SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
@@ -129,9 +137,8 @@ public class SkillLevelCalculator {
         };
     }
 
-    private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(
-            ContentServiceClient.GenericAssessmentResponse assessment) {
-        List<ProgressLogItem> log = assessment.getProgressDataForUser().getLog();
+    private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(Assessment assessment) {
+        List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
         List<AssessmentRepetition> result = new ArrayList<>(log.size());
         // go over the log and for each repetition, check how many points the user earned for it
         // at the time of completion
