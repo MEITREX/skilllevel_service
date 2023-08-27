@@ -4,11 +4,9 @@ import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
-import de.unistuttgart.iste.gits.skilllevel_service.service.calculation.SkillLevelCalculator;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
@@ -34,10 +32,6 @@ class SkillLevelServiceTest {
     private AllSkillLevelsRepository repository;
     @Autowired
     private ContentServiceClient contentServiceClient;
-    @Autowired
-    private SkillLevelMapper skillLevelMapper;
-    @Autowired
-    private SkillLevelCalculator skillLevelCalculator;
     @Autowired
     private SkillLevelService skillLevelService;
 
@@ -155,7 +149,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsWithUserProgressData(any(), any())).thenReturn(contents);
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -277,7 +271,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsWithUserProgressData(any(), any())).thenReturn(contents);
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -363,7 +357,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsWithUserProgressData(any(), any())).thenReturn(contents);
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
@@ -452,7 +446,7 @@ class SkillLevelServiceTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsWithUserProgressData(any(), any())).thenReturn(contents);
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 

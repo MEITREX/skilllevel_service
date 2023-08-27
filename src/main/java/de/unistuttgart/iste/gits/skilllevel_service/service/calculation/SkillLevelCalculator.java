@@ -34,7 +34,8 @@ public class SkillLevelCalculator {
      */
     public AllSkillLevelsEntity recalculateLevels(UUID chapterId, UUID userId,
                                                   AllSkillLevelsEntity allSkillLevelsEntity) {
-        List<Content> contents = contentServiceClient.getContentsWithUserProgressData(userId, List.of(chapterId));
+        List<Content> contents =
+                contentServiceClient.getContentsOfChapter(userId, chapterId);
 
         // set all skill levels to 0 and clear their logs. We're recalculating everything from scratch
         allSkillLevelsEntity.setAnalyze(new SkillLevelEntity(0));
@@ -42,26 +43,29 @@ public class SkillLevelCalculator {
         allSkillLevelsEntity.setUnderstand(new SkillLevelEntity(0));
         allSkillLevelsEntity.setApply(new SkillLevelEntity(0));
 
-        return calculate(allSkillLevelsEntity, contents);
+        return calculate(
+                allSkillLevelsEntity,
+                contents.stream()
+                    .filter(x -> x instanceof Assessment)
+                    .map(x -> (Assessment)x)
+                    .toList()
+        );
     }
 
-    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity, List<Content> contents) {
-        if(contents.isEmpty()) {
+    private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
+                                           List<Assessment> assessments) {
+        if(assessments.isEmpty()) {
             return allSkillLevelsEntity;
         }
 
         // find out the total amount of skill points in the current chapter
         float totalSkillPoints = 0;
-        for(Content content : contents) {
-            if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
-
+        for(Assessment assessment : assessments) {
             totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
         }
 
-        for (Content content : contents) {
-            if(!(content instanceof Assessment assessment)) continue; // Skip all contents that are not assessments
-
-            List<ProgressLogItem> log = content.getUserProgressData().getLog();
+        for (Assessment assessment : assessments) {
+            List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
 
             SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
             SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
@@ -82,7 +86,7 @@ public class SkillLevelCalculator {
                 // only add this repetition to the skill level log if the user has improved compared to previous ones
                 if(relativeSkillPoints > highestSkillPointsTillNow) {
                     List<UUID> contentIds = new ArrayList<>(1);
-                    contentIds.add(content.getId());
+                    contentIds.add(assessment.getId());
 
                     skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
                             .date(currentRepetition.timestamp)
