@@ -75,7 +75,7 @@ public class ContentServiceClient {
      *
      * @param userId     the user id
      * @param chapterId the chapter id
-     * @return the list of assessments
+     * @return the list of contents
      */
     public List<Content> getContentsOfChapter(UUID userId, UUID chapterId) {
         try {
