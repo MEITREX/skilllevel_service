@@ -32,7 +32,7 @@ public class SkillLevelService {
      */
     public SkillLevels recalculateLevels(UUID chapterId, UUID userId) {
         try {
-            AllSkillLevelsEntity entity = getOrInitializeSkillLevels(chapterId, userId);
+            AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
 
             skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
 
@@ -44,25 +44,52 @@ public class SkillLevelService {
         }
     }
 
-    public SkillLevels getSkillLevels(UUID chapterId, UUID userId) {
-        return mapper.entityToDto(getOrInitializeSkillLevels(chapterId, userId));
+    public List<SkillLevels> getSkillLevelsForChapters(List<UUID> chapterIds, UUID userId) {
+        return getOrInitializeSkillLevelEntitiesForChapters(chapterIds, userId).stream().map(mapper::entityToDto).toList();
     }
 
-    private AllSkillLevelsEntity getOrInitializeSkillLevels(UUID chapterId, UUID userId) {
-        Optional<AllSkillLevelsEntity> entity = skillLevelsRepository
-                .findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
+    private List<AllSkillLevelsEntity> getOrInitializeSkillLevelEntitiesForChapters(List<UUID> chapterIds,
+                                                                                    UUID userId) {
+        List<AllSkillLevelsEntity.PrimaryKey> primaryKeys
+                = chapterIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
 
-        if(entity.isPresent())
-            return entity.get();
+        // try to get the entities for the chapters
+        List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
 
-        AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
-        newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
-        newEntity.setRemember(initializeSkillLevelEntity(0));
-        newEntity.setUnderstand(initializeSkillLevelEntity(0));
-        newEntity.setApply(initializeSkillLevelEntity(0));
-        newEntity.setAnalyze(initializeSkillLevelEntity(0));
+        // if an entity was found of every chapter, we're done
+        if(entities.size() == chapterIds.size())
+            return entities;
 
-        return skillLevelsRepository.save(newEntity);
+        // the list might not contain an entity for every chapter if that entity hasn't been created yet. Let's find
+        // the entities that are still missing
+        List<UUID> chapterIdsWithMissingEntities = new ArrayList<>(chapterIds);
+        chapterIdsWithMissingEntities.removeIf(x -> entities.stream().anyMatch(y -> y.getId().getChapterId().equals(x)));
+
+        // create the missing entities
+        List<AllSkillLevelsEntity> createdEntities = new ArrayList<>();
+        for(UUID chapterId : chapterIdsWithMissingEntities) {
+            AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+            newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
+            newEntity.setRemember(initializeSkillLevelEntity(0));
+            newEntity.setUnderstand(initializeSkillLevelEntity(0));
+            newEntity.setApply(initializeSkillLevelEntity(0));
+            newEntity.setAnalyze(initializeSkillLevelEntity(0));
+
+            createdEntities.add(skillLevelsRepository.save(newEntity));
+        }
+
+        // combine the entities that were found with the newly created ones in the order of the chapterIds list
+        return chapterIds.stream()
+                .map(chapterId -> {
+                    Optional<AllSkillLevelsEntity> entity = entities.stream()
+                            .filter(x -> x.getId().getChapterId().equals(chapterId))
+                            .findFirst();
+
+                    return entity.orElseGet(() -> createdEntities.stream()
+                            .filter(x -> x.getId().getChapterId().equals(chapterId))
+                            .findFirst()
+                            .orElseThrow());
+                }).toList();
     }
 
     private SkillLevelEntity initializeSkillLevelEntity(int initialValue) {

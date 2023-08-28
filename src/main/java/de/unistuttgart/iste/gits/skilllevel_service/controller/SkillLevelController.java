@@ -11,6 +11,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,19 +22,17 @@ public class SkillLevelController {
     private final SkillLevelService skilllevelService;
 
     @QueryMapping
-    public SkillLevels userSkillLevels(@Argument UUID chapterId, @ContextValue LoggedInUser currentUser) {
-        return skilllevelService.getSkillLevels(chapterId, currentUser.getId());
+    public List<SkillLevels> userSkillLevelsByChapterIds(@Argument List<UUID> chapterIds, @ContextValue LoggedInUser currentUser) {
+        return skilllevelService.getSkillLevelsForChapters(chapterIds, currentUser.getId());
     }
 
     @QueryMapping
-    public SkillLevels skillLevelsForUser(@Argument UUID chapterId, @Argument UUID userId) {
-        return skilllevelService.getSkillLevels(chapterId, userId);
+    public List<SkillLevels> skillLevelsForUserByChapterIds(@Argument List<UUID> chapterIds, @Argument UUID userId) {
+        return skilllevelService.getSkillLevelsForChapters(chapterIds, userId);
     }
 
     @MutationMapping
     public SkillLevels recalculateLevels(@Argument UUID chapterId, @Argument UUID userId) {
         return skilllevelService.recalculateLevels(chapterId, userId);
     }
-
-
 }

@@ -42,7 +42,7 @@ class SkillLevelServiceTest {
         UUID chapterId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        SkillLevels skillLevels = skillLevelService.getSkillLevels(chapterId, userId);
+        SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         assertThat(skillLevels.getAnalyze().getValue()).isZero();
         assertThat(skillLevels.getApply().getValue()).isZero();
