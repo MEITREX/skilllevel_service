@@ -1,14 +1,12 @@
 type Query {
   """
-  Get the skill levels of the current user for all skill types (Bloom taxonomy) in a chapter of a course.
-  If chapterId is null, then the skill levels for the course are returned.
+  Get the skill levels of the current user for all skill types for a list of chapter ids.
   """
-  userSkillLevels(chapterId: UUID): SkillLevels!
+  userSkillLevelsByChapterIds(chapterIds: [UUID!]!): [SkillLevels!]!
   """
-  Get the skill levels of the specified user for all skill types (Bloom taxonomy) in a chapter of a course.
-  If chapterId is null, then the skill levels for the course are returned.
+  Get the skill levels of the specified user for all skill types for a list of chapter ids.
   """
-  skillLevelsForUser(chapterId: UUID, userId: UUID!): SkillLevels!
+  skillLevelsForUserByChapterIds(chapterIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
 }
 
 type Mutation {
