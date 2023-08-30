@@ -140,6 +140,10 @@ public class SkillLevelCalculator {
     private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(Assessment assessment) {
         List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
         List<AssessmentRepetition> result = new ArrayList<>(log.size());
+
+        // null if the assessment should not be repeated
+        Integer initialLearningInterval = assessment.getAssessmentMetadata().getInitialLearningInterval();
+
         // go over the log and for each repetition, check how many points the user earned for it
         // at the time of completion
         for(int i = 0; i < log.size(); i++) {
@@ -153,35 +157,40 @@ public class SkillLevelCalculator {
             modifiers *= currentLogItem.getCorrectness();
 
             // we now need to figure out how many repetitions of the content the student has done previously to the
-            // current one. However, a repetition should only be counted if there is a large enough time gap between
+            // current one (because repetitions give less points until the student reaches a certain number of
+            // repetitions). However, a repetition should only be counted if there is a large enough time gap between
             // the repetitions.
+            // We only have to figure this out if this is an assessment which should be repeated, otherwise the first
+            // repetition will already give full points
             int countedRepetitions = 0;
-            OffsetDateTime lastCountedRepetitionTime = null;
-            // loop over the previous log items
-            for (int j = 0; j <= i; j++) {
-                ProgressLogItem otherLogItem = log.get(j);
-                if(lastCountedRepetitionTime == null) {
-                    // for the first time the content was done, we don't need to check the time gap
-                    lastCountedRepetitionTime = otherLogItem.getTimestamp();
-                    countedRepetitions++;
-                } else {
-                    // learning interval is doubled for each repetition
-                    Duration minimumLearningInterval = Duration.ofDays(
-                            (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, (int)(countedRepetitions - 1)))
-                    );
-                    // if the time gap between the current log item and the previous one is large enough, count it
-                    // as a repetition
-                    if(otherLogItem.getTimestamp().isAfter(lastCountedRepetitionTime.plus(minimumLearningInterval))) {
+            if(initialLearningInterval != null) {
+                OffsetDateTime lastCountedRepetitionTime = null;
+                // loop over the previous log items
+                for (int j = 0; j <= i; j++) {
+                    ProgressLogItem otherLogItem = log.get(j);
+                    if(lastCountedRepetitionTime == null) {
+                        // for the first time the content was done, we don't need to check the time gap
                         lastCountedRepetitionTime = otherLogItem.getTimestamp();
                         countedRepetitions++;
+                    } else {
+                        // learning interval is doubled for each repetition
+                        Duration minimumLearningInterval = Duration.ofDays(
+                                (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, (int)(countedRepetitions - 1)))
+                        );
+                        // if the time gap between the current log item and the previous one is large enough, count it
+                        // as a repetition
+                        if(otherLogItem.getTimestamp().isAfter(lastCountedRepetitionTime.plus(minimumLearningInterval))) {
+                            lastCountedRepetitionTime = otherLogItem.getTimestamp();
+                            countedRepetitions++;
+                        }
                     }
                 }
-            }
 
-            // 3 repetitions needed for full points.
-            // TODO: This is hard-coded for now, but should be configurable per assessment in the future
-            final int repetitionsNeeded = 3;
-            modifiers *= (float)Math.min(countedRepetitions, repetitionsNeeded) / repetitionsNeeded;
+                // 3 repetitions needed for full points.
+                // TODO: This is hard-coded for now, but should be configurable per assessment in the future
+                final int repetitionsNeeded = 3;
+                modifiers *= (float)Math.min(countedRepetitions, repetitionsNeeded) / repetitionsNeeded;
+            }
 
             // TODO: Add time modifier. For this there is still an implementation of time limits missing in the
             // content service
