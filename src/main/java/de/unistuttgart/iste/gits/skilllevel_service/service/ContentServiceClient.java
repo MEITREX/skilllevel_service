@@ -53,14 +53,16 @@ public class ContentServiceClient {
             String query = """
                     query($contentId: UUID!) {
                         contentsByIds(ids: [$contentId]) {
-                            chapterId
+                            metadata {
+                                chapterId
+                            }
                         }
                     }
                     """;
 
             return client.document(query)
                     .variable("contentId", contentId)
-                    .retrieve("contentsByIds[0].chapterId").toEntity(UUID.class)
+                    .retrieve("contentsByIds[0].metadata.chapterId").toEntity(UUID.class)
                     .retry(RETRY_COUNT)
                     .block();
 
