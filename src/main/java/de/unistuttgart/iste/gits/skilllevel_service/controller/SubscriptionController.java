@@ -32,8 +32,8 @@ public class SubscriptionController {
 
         return Mono.fromCallable(() -> {
             try {
-                UUID chapterId = contentServiceClient.getChapterIdOfContent(
-                        contentServiceClient.getChapterIdOfContent(cloudEvent.getData().getContentId()));
+                UUID chapterId =
+                        contentServiceClient.getChapterIdOfContent(cloudEvent.getData().getContentId());
                 return skillLevelService.recalculateLevels(chapterId, cloudEvent.getData().getUserId());
             } catch (Exception e) {
                 log.error("Error while processing user progress event", e);
