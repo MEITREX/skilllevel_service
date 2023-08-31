@@ -91,6 +91,7 @@ class SkillLevelServiceTest {
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
                                 .setSkillType(SkillType.REMEMBER)
+                                .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
                                 .setUserId(userId)
@@ -128,6 +129,7 @@ class SkillLevelServiceTest {
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(4)
                                 .setSkillType(SkillType.REMEMBER)
+                                .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
                                 .setUserId(userId)
@@ -156,6 +158,115 @@ class SkillLevelServiceTest {
         // 10 levels can be gained per chapter. The content we completed gives 3 of 3+4=7 skill points of
         // the chapter, and we completed it the first time so multiply by (1/3)
         float skillValue = 10 * (3.f / (3 + 4)) * (1.f / 3);
+
+        assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillValue);
+
+        // check the log
+        assertThat(skillLevels.getRemember().getLog()).containsExactly(
+                new SkillLevelLogItem(contents.get(0).getUserProgressData().getLog().get(0).getTimestamp(),
+                        skillValue,
+                        0,
+                        skillValue,
+                        List.of(contentId1))
+        );
+    }
+
+    @Test
+    @Transactional
+    @Commit
+    void testCalculateLevelsNoInitialLearningInterval() {
+        UUID chapterId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        // let's create some content, so we can calculate the user's skill levels based on their progress with it
+        UUID contentId1 = UUID.randomUUID();
+        UUID contentId2 = UUID.randomUUID();
+        List<Content> contents = List.of(
+                FlashcardSetAssessment.builder()
+                        .setId(contentId1)
+                        .setMetadata(ContentMetadata.builder()
+                                .setChapterId(chapterId)
+                                .setName("Content 1")
+                                .setRewardPoints(5)
+                                .setSuggestedDate(OffsetDateTime.of(2023,
+                                        8,
+                                        14,
+                                        2,
+                                        1,
+                                        0,
+                                        0,
+                                        ZoneOffset.UTC))
+                                .build())
+                        .setAssessmentMetadata(AssessmentMetadata.builder()
+                                .setSkillPoints(3)
+                                .setSkillType(SkillType.REMEMBER)
+                                .setInitialLearningInterval(null)
+                                .build())
+                        .setUserProgressData(UserProgressData.builder()
+                                .setUserId(userId)
+                                .setContentId(contentId1)
+                                .setLog(List.of(ProgressLogItem.builder()
+                                        .setCorrectness(1)
+                                        .setHintsUsed(0)
+                                        .setTimestamp(OffsetDateTime.of(2023,
+                                                8,
+                                                14,
+                                                2,
+                                                1,
+                                                0,
+                                                0,
+                                                ZoneOffset.UTC))
+                                        .setSuccess(true)
+                                        .build()))
+                                .build())
+                        .build(),
+                QuizAssessment.builder()
+                        .setId(contentId2)
+                        .setMetadata(ContentMetadata.builder()
+                                .setChapterId(chapterId)
+                                .setName("Content 2")
+                                .setRewardPoints(3)
+                                .setSuggestedDate(OffsetDateTime.of(2023,
+                                        8,
+                                        14,
+                                        3,
+                                        1,
+                                        0,
+                                        0,
+                                        ZoneOffset.UTC))
+                                .build())
+                        .setAssessmentMetadata(AssessmentMetadata.builder()
+                                .setSkillPoints(4)
+                                .setSkillType(SkillType.REMEMBER)
+                                .setInitialLearningInterval(null)
+                                .build())
+                        .setUserProgressData(UserProgressData.builder()
+                                .setUserId(userId)
+                                .setContentId(contentId2)
+                                .setLog(List.of(ProgressLogItem.builder()
+                                        .setCorrectness(0)
+                                        .setHintsUsed(0)
+                                        .setTimestamp(OffsetDateTime.of(2023,
+                                                8,
+                                                14,
+                                                3,
+                                                1,
+                                                0,
+                                                0,
+                                                ZoneOffset.UTC))
+                                        .setSuccess(false)
+                                        .build()))
+                                .build())
+                        .build()
+        );
+
+        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
+
+        SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
+
+        // 10 levels can be gained per chapter. The content we completed gives 3 of 3+4=7 skill points of
+        // the chapter, and we completed it the first time so multiply by (1/3)
+        float skillValue = 10 * (3.f / (3 + 4));
 
         assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillValue);
 
