@@ -1,7 +1,7 @@
 package de.unistuttgart.iste.gits.skilllevel_service.persistence.mapper;
 
 import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;

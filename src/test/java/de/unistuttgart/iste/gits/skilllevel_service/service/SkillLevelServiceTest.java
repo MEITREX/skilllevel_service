@@ -1,12 +1,10 @@
-package de.unistuttgart.iste.gits.skilllevel_service;
+package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
-import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
-import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.skilllevel_service.persistence.dao;
+package de.unistuttgart.iste.gits.skilllevel_service.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Database entity which represents a particular skill level (Remember, Understand, etc.) of a user for a chapter.
+ */
 @Entity(name = "SkillLevel")
 @Data
 @Builder
@@ -26,9 +29,16 @@ public class SkillLevelEntity {
     @GeneratedValue
     private UUID id;
 
+    /**
+     * Current value of the skill level. Can range from 0 to 10.
+     */
     @Column(nullable = false)
     private float value;
 
+    /**
+     * List of log entries for this skill level. Contains information about how the value of the skill level has
+     * progressed over time.
+     */
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     @OrderBy("date DESC")
     @Builder.Default
