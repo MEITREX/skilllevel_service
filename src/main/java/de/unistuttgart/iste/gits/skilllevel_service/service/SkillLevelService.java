@@ -44,10 +44,23 @@ public class SkillLevelService {
         }
     }
 
+    /**
+     * Returns the skill levels for a given user and a list of chapters.
+     * @param chapterIds The ids of the chapters to get the skill levels for
+     * @param userId The id of the user to get the skill levels for
+     * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
+     */
     public List<SkillLevels> getSkillLevelsForChapters(List<UUID> chapterIds, UUID userId) {
         return getOrInitializeSkillLevelEntitiesForChapters(chapterIds, userId).stream().map(mapper::entityToDto).toList();
     }
 
+    /**
+     * Returns the skill levels for a given user and a list of chapters. If the skill levels for a chapter don't exist
+     * yet, they will be initialized in the database with a value of 0.
+     * @param chapterIds The ids of the chapters to get the skill levels for
+     * @param userId The id of the user to get the skill levels for
+     * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
+     */
     private List<AllSkillLevelsEntity> getOrInitializeSkillLevelEntitiesForChapters(List<UUID> chapterIds,
                                                                                     UUID userId) {
         List<AllSkillLevelsEntity.PrimaryKey> primaryKeys
@@ -75,6 +88,7 @@ public class SkillLevelService {
             newEntity.setApply(initializeSkillLevelEntity(0));
             newEntity.setAnalyze(initializeSkillLevelEntity(0));
 
+            // store in the db
             createdEntities.add(skillLevelsRepository.save(newEntity));
         }
 
@@ -92,6 +106,11 @@ public class SkillLevelService {
                 }).toList();
     }
 
+    /**
+     * Initializes a skill level entity with the given initial value.
+     * @param initialValue The initial value to set the skill level to
+     * @return The initialized skill level entity
+     */
     private SkillLevelEntity initializeSkillLevelEntity(int initialValue) {
         SkillLevelEntity skillLevelEntity = new SkillLevelEntity();
         skillLevelEntity.setValue(initialValue);
@@ -99,6 +118,10 @@ public class SkillLevelService {
         return skillLevelEntity;
     }
 
+    /**
+     * Deletes all skill levels for a given chapter.
+     * @param chapterId The id of the chapter to delete the skill levels for
+     */
     public void deleteSkillLevelsForChapter(UUID chapterId) {
         List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
         skillLevelsRepository.deleteAll(entities);
