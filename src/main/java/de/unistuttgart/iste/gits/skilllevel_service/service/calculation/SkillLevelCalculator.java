@@ -205,7 +205,7 @@ public class SkillLevelCalculator {
             } else {
                 // learning interval is doubled for each repetition
                 Duration minimumLearningInterval = Duration.ofDays(
-                        (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, countedRepetitions - 1))
+                        (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, countedRepetitions - 1.0))
                 );
 
                 // if the time gap between the current log item and the previous one is large enough, count it
