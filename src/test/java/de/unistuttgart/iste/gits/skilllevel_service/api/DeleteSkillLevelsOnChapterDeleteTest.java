@@ -29,8 +29,6 @@ class DeleteSkillLevelsOnChapterDeleteTest {
     @Autowired
     private AllSkillLevelsRepository repository;
     @Autowired
-    private ContentServiceClient contentServiceClient;
-    @Autowired
     private SkillLevelService skillLevelService;
     @Autowired
     private SubscriptionController subscriptionController;
