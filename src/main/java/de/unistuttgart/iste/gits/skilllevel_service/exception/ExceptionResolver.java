@@ -1,12 +1,8 @@
 package de.unistuttgart.iste.gits.skilllevel_service.exception;
 
 import de.unistuttgart.iste.gits.common.exception.ExceptionToGraphQlErrorConverter;
-import graphql.ErrorType;
 import graphql.GraphQLError;
-import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.lang.NonNull;
