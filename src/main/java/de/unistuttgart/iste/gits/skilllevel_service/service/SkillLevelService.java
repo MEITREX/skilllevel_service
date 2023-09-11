@@ -99,4 +99,8 @@ public class SkillLevelService {
         return skillLevelEntity;
     }
 
+    public void deleteSkillLevelsForChapter(UUID chapterId) {
+        List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
+        skillLevelsRepository.deleteAll(entities);
+    }
 }

@@ -1,5 +1,8 @@
 package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
+import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
+import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
+import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
 import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
@@ -38,6 +41,24 @@ public class SubscriptionController {
             } catch (Exception e) {
                 log.error("Error while processing user progress event", e);
                 return null;
+            }
+        });
+    }
+
+    @Topic(name = "chapter-changes", pubsubName = "gits")
+    @PostMapping(path = "/skilllevel-service/chapter-changes-pubsub")
+    public Mono<Void> onChapterChanged(@RequestBody CloudEvent<ChapterChangeEvent> cloudEvent,
+                                      @RequestHeader Map<String, String> headers) {
+        return Mono.fromRunnable(() -> {
+            try {
+                if(cloudEvent.getData().getOperation() != CrudOperation.DELETE)
+                    return;
+
+                for(UUID chapterId : cloudEvent.getData().getChapterIds()) {
+                    skillLevelService.deleteSkillLevelsForChapter(chapterId);
+                }
+            } catch (Exception e) {
+                log.error("Error while processing course change event", e);
             }
         });
     }

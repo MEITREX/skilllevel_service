@@ -24,6 +24,10 @@ public class SkillLevelCalculator {
 
     private final ContentServiceClient contentServiceClient;
 
+    // 3 repetitions needed for full points.
+    // TODO: This is hard-coded for now, but could be made configurable per assessment in the future
+    static final int REPETITIONS_NEEDED = 3;
+
     /**
      * Recalculates the skill levels for a given user and chapter of a course.
      *
@@ -46,7 +50,7 @@ public class SkillLevelCalculator {
         return calculate(
                 allSkillLevelsEntity,
                 contents.stream()
-                    .filter(x -> x instanceof Assessment)
+                    .filter(Assessment.class::isInstance)
                     .map(x -> (Assessment)x)
                     .toList()
         );
@@ -59,10 +63,7 @@ public class SkillLevelCalculator {
         }
 
         // find out the total amount of skill points in the current chapter
-        float totalSkillPoints = 0;
-        for(Assessment assessment : assessments) {
-            totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
-        }
+        float totalSkillPoints = getTotalSkillPointsOfAssessments(assessments);
 
         for (Assessment assessment : assessments) {
             List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
@@ -156,44 +157,20 @@ public class SkillLevelCalculator {
 
             modifiers *= currentLogItem.getCorrectness();
 
-            // we now need to figure out how many repetitions of the content the student has done previously to the
-            // current one (because repetitions give less points until the student reaches a certain number of
-            // repetitions). However, a repetition should only be counted if there is a large enough time gap between
-            // the repetitions.
-            // We only have to figure this out if this is an assessment which should be repeated, otherwise the first
-            // repetition will already give full points
-            int countedRepetitions = 0;
+            // If this is a repeating assessment, the user will get fewer points for the first repetitions.
+            // For this we now need to figure out how many repetitions of the content the student has done previously
+            // to the current one (because repetitions give less points until the student reaches a certain number of
+            // repetitions)
             if(initialLearningInterval != null) {
-                OffsetDateTime lastCountedRepetitionTime = null;
-                // loop over the previous log items
-                for (int j = 0; j <= i; j++) {
-                    ProgressLogItem otherLogItem = log.get(j);
-                    if(lastCountedRepetitionTime == null) {
-                        // for the first time the content was done, we don't need to check the time gap
-                        lastCountedRepetitionTime = otherLogItem.getTimestamp();
-                        countedRepetitions++;
-                    } else {
-                        // learning interval is doubled for each repetition
-                        Duration minimumLearningInterval = Duration.ofDays(
-                                (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, (int)(countedRepetitions - 1)))
-                        );
-                        // if the time gap between the current log item and the previous one is large enough, count it
-                        // as a repetition
-                        if(otherLogItem.getTimestamp().isAfter(lastCountedRepetitionTime.plus(minimumLearningInterval))) {
-                            lastCountedRepetitionTime = otherLogItem.getTimestamp();
-                            countedRepetitions++;
-                        }
-                    }
-                }
+                int countedRepetitions = determineCurrentRepetitionCount(assessment, currentLogItem);
 
-                // 3 repetitions needed for full points.
-                // TODO: This is hard-coded for now, but should be configurable per assessment in the future
-                final int repetitionsNeeded = 3;
-                modifiers *= (float)Math.min(countedRepetitions, repetitionsNeeded) / repetitionsNeeded;
+                // multiply by the current repetition count compared to the needed repetition count
+                // e.g. for repetition 2 of 3 the user will get 2/3 of the points
+                modifiers *= (float)Math.min(countedRepetitions, REPETITIONS_NEEDED) / REPETITIONS_NEEDED;
             }
 
-            // TODO: Add time modifier. For this there is still an implementation of time limits missing in the
-            // content service
+            // TODO: In the future, time taken to complete should also be taken into account. For this, time tracking
+            // in the frontend and a time limit property in the assessment metadata will be necessary
 
             result.add(new AssessmentRepetition(
                     currentLogItem.getTimestamp(),
@@ -203,6 +180,68 @@ public class SkillLevelCalculator {
         return result;
     }
 
+    /**
+     * Helper method which determines for a given log item of an assessment how many repetitions the user has done
+     * up to that point (including the current one). Note that repetitions are only counted if they are far enough
+     * apart in time. The necessary time interval is dependent on the initialLearningInterval property of the
+     * assessment, the second repetition will need to be at least initialLearningInterval days after the first, and
+     * for each further repetition the necessary learning interval will continue to double.
+     * @param assessment The assessment the currentLogItem is located in
+     * @param currentLogItem The current log item up to which the number of repetitions should be determined
+     * @return Returns an integer containing the number of "valid" repetitions the user has done up to the
+     *         current log item.
+     */
+    private static int determineCurrentRepetitionCount(Assessment assessment, ProgressLogItem currentLogItem) {
+        List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
+
+        int countedRepetitions = 0;
+        OffsetDateTime lastCountedRepetitionTime = null;
+        // loop over the log items up to the current one
+        for (ProgressLogItem logItem : log) {
+            if(lastCountedRepetitionTime == null) {
+                // for the first time the content was done, we don't need to check the time gap
+                lastCountedRepetitionTime = logItem.getTimestamp();
+                countedRepetitions++;
+            } else {
+                // learning interval is doubled for each repetition
+                Duration minimumLearningInterval = Duration.ofDays(
+                        (long)(assessment.getAssessmentMetadata().getInitialLearningInterval() * Math.pow(2, countedRepetitions - 1))
+                );
+
+                // if the time gap between the current log item and the previous one is large enough, count it
+                // as a repetition
+                if(logItem.getTimestamp().isAfter(lastCountedRepetitionTime.plus(minimumLearningInterval))) {
+                    lastCountedRepetitionTime = logItem.getTimestamp();
+                    countedRepetitions++;
+                }
+            }
+
+            // stop iterating over the log when we have reached the current log item
+            if(logItem == currentLogItem) {
+                break;
+            }
+        }
+
+        return countedRepetitions;
+    }
+
+    /**
+     * Helper method which sums up all skill points of the passed assessments.
+     * @param assessments The assessments to get the skill points from.
+     * @return Returns an integer containing the sum of all skill points of the passed assessments.
+     */
+    private static int getTotalSkillPointsOfAssessments(List<Assessment> assessments) {
+        int totalSkillPoints = 0;
+        for(Assessment assessment : assessments) {
+            totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
+        }
+        return totalSkillPoints;
+    }
+
+    /**
+     * Helper class which stores the timestamp and the earned skill points of a repetition of an assessment during
+     * the calculation.
+     */
     private static class AssessmentRepetition {
         public final OffsetDateTime timestamp;
         public final float earnedSkillPoints;

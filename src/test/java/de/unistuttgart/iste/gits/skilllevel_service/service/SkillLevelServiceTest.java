@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.skilllevel_service;
+package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
