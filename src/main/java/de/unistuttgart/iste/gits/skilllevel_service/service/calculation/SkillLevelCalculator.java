@@ -4,9 +4,9 @@ import de.unistuttgart.iste.gits.generated.dto.Assessment;
 import de.unistuttgart.iste.gits.generated.dto.Content;
 import de.unistuttgart.iste.gits.generated.dto.ProgressLogItem;
 import de.unistuttgart.iste.gits.generated.dto.SkillType;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelLogEntry;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.SkillLevelEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.SkillLevelLogEntry;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -56,6 +56,12 @@ public class SkillLevelCalculator {
         );
     }
 
+    /**
+     * Adds the points earned by a user by working on the passed assessments to the passed skill levels.
+     * @param allSkillLevelsEntity The skill levels entity of the user to add the points to
+     * @param assessments The assessments to calculate the points from
+     * @return Returns the passed AllSkillLevelsEntity with the added points.
+     */
     private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
                                            List<Assessment> assessments) {
         if(assessments.isEmpty()) {
@@ -89,6 +95,9 @@ public class SkillLevelCalculator {
                     List<UUID> contentIds = new ArrayList<>(1);
                     contentIds.add(assessment.getId());
 
+                    // add the log entry to the skill level. For now only add the skill points earned ("difference")
+                    // because the order of the log will not be correct for now because we go through each assessment
+                    // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
                     skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
                             .date(currentRepetition.timestamp)
                             .difference(relativeSkillPoints - highestSkillPointsTillNow)
@@ -128,6 +137,12 @@ public class SkillLevelCalculator {
         return allSkillLevelsEntity;
     }
 
+    /**
+     * Helper method which returns the correct SkillLevelEntity of an AllSkillLevelsEntity for a given skill type.
+     * @param allSkillLevelsEntity The AllSkillLevelsEntity to get the SkillLevelEntity from
+     * @param skillType The skill type to get the SkillLevelEntity for
+     * @return Returns the SkillLevelEntity of the passed AllSkillLevelsEntity for the passed skill type.
+     */
     private SkillLevelEntity getSkillLevelEntityBySkillType(AllSkillLevelsEntity allSkillLevelsEntity,
                                                             SkillType skillType) {
         return switch (skillType) {
@@ -138,6 +153,13 @@ public class SkillLevelCalculator {
         };
     }
 
+    /**
+     * Helper method which calculates the history of skill points earned by a user through repetition of a
+     * given assessment.
+     * @param assessment The assessment to calculate the skill points for
+     * @return Returns a list of AssessmentRepetition objects, each containing the timestamp of the repetition and
+     *         the earned skill points for that repetition.
+     */
     private List<AssessmentRepetition> calculateSkillPointsOfRepetitions(Assessment assessment) {
         List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
         List<AssessmentRepetition> result = new ArrayList<>(log.size());

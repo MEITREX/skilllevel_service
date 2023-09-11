@@ -1,11 +1,8 @@
 package de.unistuttgart.iste.gits.skilllevel_service.persistence.repository;
 
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelLogEntry;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

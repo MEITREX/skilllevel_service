@@ -50,10 +50,30 @@ public class DeleteSkillLevelsOnChapterDeleteTest {
         // then, call the subscription controller as if a chapter delete event was received
         subscriptionController.onChapterChanged(
                 new CloudEvent<>(null, null, null, null, null,
-                        new ChapterChangeEvent(List.of(chapterId), CrudOperation.DELETE)),
-                null).block();
+                        new ChapterChangeEvent(List.of(chapterId), CrudOperation.DELETE))).block();
 
         // now assert that the skill levels and children were deleted from the database
         assertThat(repository.findAll()).isEmpty();
+    }
+
+    @Test
+    @Transactional
+    @Commit
+    void testDoNotDeleteSkillLevelsOnChapterUpdate() {
+        // firstly, initialize the skill levels for some chapter
+        UUID userId = UUID.randomUUID();
+        UUID chapterId = UUID.randomUUID();
+        SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
+
+        // test that the skill levels were stored in the database
+        assertThat(repository.findAll()).isNotEmpty();
+
+        // then, call the subscription controller as if a chapter delete event was received
+        subscriptionController.onChapterChanged(
+                new CloudEvent<>(null, null, null, null, null,
+                        new ChapterChangeEvent(List.of(chapterId), CrudOperation.UPDATE))).block();
+
+        // now assert that the skill levels and children were deleted from the database
+        assertThat(repository.findAll()).isNotEmpty();
     }
 }

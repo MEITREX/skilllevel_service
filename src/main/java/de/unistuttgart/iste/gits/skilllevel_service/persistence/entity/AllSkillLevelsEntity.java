@@ -1,4 +1,4 @@
-package de.unistuttgart.iste.gits.skilllevel_service.persistence.dao;
+package de.unistuttgart.iste.gits.skilllevel_service.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.UUID;
 
+/**
+ * Database entity which represents the skill levels (all types) of a user for a chapter.
+ */
 @Entity(name = "SkillLevels")
 @Data
 @Builder

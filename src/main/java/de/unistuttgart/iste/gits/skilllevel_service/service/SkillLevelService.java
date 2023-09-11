@@ -1,8 +1,8 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.generated.dto.*;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.AllSkillLevelsEntity;
-import de.unistuttgart.iste.gits.skilllevel_service.persistence.dao.SkillLevelEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.SkillLevelEntity;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
 import de.unistuttgart.iste.gits.skilllevel_service.service.calculation.*;
