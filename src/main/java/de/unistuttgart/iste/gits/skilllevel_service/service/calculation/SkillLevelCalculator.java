@@ -64,12 +64,12 @@ public class SkillLevelCalculator {
      */
     private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
                                            List<Assessment> assessments) {
-        if(assessments.isEmpty()) {
-            return allSkillLevelsEntity;
-        }
-
         // find out the total amount of skill points in the current chapter
         float totalSkillPoints = getTotalSkillPointsOfAssessments(assessments);
+
+        if(totalSkillPoints == 0) {
+            return allSkillLevelsEntity;
+        }
 
         for (Assessment assessment : assessments) {
             List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
