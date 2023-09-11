@@ -4,10 +4,8 @@ import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
 import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
-import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
 import de.unistuttgart.iste.gits.skilllevel_service.controller.SubscriptionController;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
-import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import io.dapr.client.domain.CloudEvent;
@@ -40,7 +38,7 @@ class DeleteSkillLevelsOnChapterDeleteTest {
         // firstly, initialize the skill levels for some chapter
         UUID userId = UUID.randomUUID();
         UUID chapterId = UUID.randomUUID();
-        SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
+        skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         // test that the skill levels were stored in the database
         assertThat(repository.findAll()).isNotEmpty();
@@ -61,7 +59,7 @@ class DeleteSkillLevelsOnChapterDeleteTest {
         // firstly, initialize the skill levels for some chapter
         UUID userId = UUID.randomUUID();
         UUID chapterId = UUID.randomUUID();
-        SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
+        skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         // test that the skill levels were stored in the database
         assertThat(repository.findAll()).isNotEmpty();
