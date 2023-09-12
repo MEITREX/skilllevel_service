@@ -50,9 +50,9 @@ public class SkillLevelCalculator {
         return calculate(
                 allSkillLevelsEntity,
                 contents.stream()
-                    .filter(Assessment.class::isInstance)
-                    .map(x -> (Assessment)x)
-                    .toList()
+                        .filter(Assessment.class::isInstance)
+                        .map(x -> (Assessment)x)
+                        .toList()
         );
     }
 
@@ -78,9 +78,6 @@ public class SkillLevelCalculator {
             List<SkillLevelEntity> skillLevelsToModify =
                     skillTypes.stream().map(x -> getSkillLevelEntityBySkillType(allSkillLevelsEntity, x)).toList();
 
-            // if nothing in the log (i.e. the user has not worked on this content), skip it
-            if(log.isEmpty()) continue;
-
             List<AssessmentRepetition> repetitionResults = calculateSkillPointsOfRepetitions(assessment);
 
             float highestSkillPointsTillNow = 0;
@@ -92,23 +89,24 @@ public class SkillLevelCalculator {
                 float relativeSkillPoints = 10.f * (currentRepetition.earnedSkillPoints / totalSkillPoints);
 
                 // only add this repetition to the skill level log if the user has improved compared to previous ones
-                if(relativeSkillPoints > highestSkillPointsTillNow) {
-                    List<UUID> contentIds = new ArrayList<>(1);
-                    contentIds.add(assessment.getId());
+                if(relativeSkillPoints <= highestSkillPointsTillNow)
+                    continue;
 
-                    // add the log entry to the skill level. For now only add the skill points earned ("difference")
-                    // because the order of the log will not be correct for now because we go through each assessment
-                    // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
-                    for(SkillLevelEntity skillLevelToModify : skillLevelsToModify) {
-                        skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
-                                .date(currentRepetition.timestamp)
-                                .difference(relativeSkillPoints - highestSkillPointsTillNow)
-                                .associatedContentIds(contentIds)
-                                .build());
-                    }
+                List<UUID> contentIds = new ArrayList<>(1);
+                contentIds.add(assessment.getId());
 
-                    highestSkillPointsTillNow = relativeSkillPoints;
+                // add the log entry to the skill level. For now only add the skill points earned ("difference")
+                // because the order of the log will not be correct for now because we go through each assessment
+                // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
+                for(SkillLevelEntity skillLevelToModify : skillLevelsToModify) {
+                    skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
+                            .date(currentRepetition.timestamp)
+                            .difference(relativeSkillPoints - highestSkillPointsTillNow)
+                            .associatedContentIds(contentIds)
+                            .build());
                 }
+
+                highestSkillPointsTillNow = relativeSkillPoints;
             }
         }
 
