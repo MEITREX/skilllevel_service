@@ -74,8 +74,9 @@ public class SkillLevelCalculator {
         for (Assessment assessment : assessments) {
             List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
 
-            SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
-            SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
+            List<SkillType> skillTypes = assessment.getAssessmentMetadata().getSkillTypes();
+            List<SkillLevelEntity> skillLevelsToModify =
+                    skillTypes.stream().map(x -> getSkillLevelEntityBySkillType(allSkillLevelsEntity, x)).toList();
 
             // if nothing in the log (i.e. the user has not worked on this content), skip it
             if(log.isEmpty()) continue;
@@ -98,11 +99,13 @@ public class SkillLevelCalculator {
                     // add the log entry to the skill level. For now only add the skill points earned ("difference")
                     // because the order of the log will not be correct for now because we go through each assessment
                     // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
-                    skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
-                            .date(currentRepetition.timestamp)
-                            .difference(relativeSkillPoints - highestSkillPointsTillNow)
-                            .associatedContentIds(contentIds)
-                            .build());
+                    for(SkillLevelEntity skillLevelToModify : skillLevelsToModify) {
+                        skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
+                                .date(currentRepetition.timestamp)
+                                .difference(relativeSkillPoints - highestSkillPointsTillNow)
+                                .associatedContentIds(contentIds)
+                                .build());
+                    }
 
                     highestSkillPointsTillNow = relativeSkillPoints;
                 }
