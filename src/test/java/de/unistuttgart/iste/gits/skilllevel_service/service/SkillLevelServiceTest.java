@@ -88,7 +88,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER, SkillType.ANALYSE))
                                 .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -126,7 +126,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(4)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER, SkillType.ANALYSE))
                                 .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -158,9 +158,17 @@ class SkillLevelServiceTest {
         float skillValue = 10 * (3.f / (3 + 4)) * (1.f / 3);
 
         assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillValue);
+        assertThat(skillLevels.getAnalyze().getValue()).isEqualTo(skillValue);
 
         // check the log
         assertThat(skillLevels.getRemember().getLog()).containsExactly(
+                new SkillLevelLogItem(contents.get(0).getUserProgressData().getLog().get(0).getTimestamp(),
+                        skillValue,
+                        0,
+                        skillValue,
+                        List.of(contentId1))
+        );
+        assertThat(skillLevels.getAnalyze().getLog()).containsExactly(
                 new SkillLevelLogItem(contents.get(0).getUserProgressData().getLog().get(0).getTimestamp(),
                         skillValue,
                         0,
@@ -197,7 +205,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .setInitialLearningInterval(null)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -235,7 +243,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(4)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .setInitialLearningInterval(null)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -306,7 +314,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -358,7 +366,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(4)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
                                 .setUserId(userId)
@@ -429,7 +437,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()
@@ -518,7 +526,7 @@ class SkillLevelServiceTest {
                                 .build())
                         .setAssessmentMetadata(AssessmentMetadata.builder()
                                 .setSkillPoints(3)
-                                .setSkillType(SkillType.REMEMBER)
+                                .setSkillTypes(List.of(SkillType.REMEMBER))
                                 .setInitialLearningInterval(1)
                                 .build())
                         .setUserProgressData(UserProgressData.builder()

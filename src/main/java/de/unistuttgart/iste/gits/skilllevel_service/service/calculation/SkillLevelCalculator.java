@@ -50,9 +50,9 @@ public class SkillLevelCalculator {
         return calculate(
                 allSkillLevelsEntity,
                 contents.stream()
-                    .filter(Assessment.class::isInstance)
-                    .map(x -> (Assessment)x)
-                    .toList()
+                        .filter(Assessment.class::isInstance)
+                        .map(x -> (Assessment)x)
+                        .toList()
         );
     }
 
@@ -72,41 +72,7 @@ public class SkillLevelCalculator {
         }
 
         for (Assessment assessment : assessments) {
-            List<ProgressLogItem> log = assessment.getUserProgressData().getLog();
-
-            SkillType skillType = assessment.getAssessmentMetadata().getSkillType();
-            SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
-
-            // if nothing in the log (i.e. the user has not worked on this content), skip it
-            if(log.isEmpty()) continue;
-
-            List<AssessmentRepetition> repetitionResults = calculateSkillPointsOfRepetitions(assessment);
-
-            float highestSkillPointsTillNow = 0;
-            // go over all repetitions the user has made on this content
-            for(AssessmentRepetition currentRepetition : repetitionResults) {
-                // each chapter has a maximum of 10 skill levels, so we need to scale the earned skill points relative
-                // to the total skill points of the chapter times the 10 levels to calculate how many levels the user
-                // will gain
-                float relativeSkillPoints = 10.f * (currentRepetition.earnedSkillPoints / totalSkillPoints);
-
-                // only add this repetition to the skill level log if the user has improved compared to previous ones
-                if(relativeSkillPoints > highestSkillPointsTillNow) {
-                    List<UUID> contentIds = new ArrayList<>(1);
-                    contentIds.add(assessment.getId());
-
-                    // add the log entry to the skill level. For now only add the skill points earned ("difference")
-                    // because the order of the log will not be correct for now because we go through each assessment
-                    // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
-                    skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
-                            .date(currentRepetition.timestamp)
-                            .difference(relativeSkillPoints - highestSkillPointsTillNow)
-                            .associatedContentIds(contentIds)
-                            .build());
-
-                    highestSkillPointsTillNow = relativeSkillPoints;
-                }
-            }
+            addLogItemsToSkillLevelsForAssessment(allSkillLevelsEntity, assessment, totalSkillPoints);
         }
 
         // go through all 4 types of skill levels and sort their log entries by date
@@ -135,6 +101,54 @@ public class SkillLevelCalculator {
         }
 
         return allSkillLevelsEntity;
+    }
+
+    /**
+     * Helper method which, given an AllSkillLevelsEntity and an assessment, adds the earned skill points of the
+     * assessment to the log of the corresponding skill levels. Note that the log items are just appended to the
+     * log, they are not sorted by date yet, and they "newValue" property is not set yet, as it is dependent on
+     * other values in the log.
+     * @param allSkillLevelsEntity The AllSkillLevelsEntity to add the log items to
+     * @param assessment The assessment to calculate the log items from
+     * @param totalSkillPoints The total amount of skill points in the current chapter
+     */
+    private void addLogItemsToSkillLevelsForAssessment(AllSkillLevelsEntity allSkillLevelsEntity,
+                                                       Assessment assessment,
+                                                       float totalSkillPoints) {
+        List<SkillType> skillTypes = assessment.getAssessmentMetadata().getSkillTypes();
+        List<SkillLevelEntity> skillLevelsToModify =
+                skillTypes.stream().map(x -> getSkillLevelEntityBySkillType(allSkillLevelsEntity, x)).toList();
+
+        List<AssessmentRepetition> repetitionResults = calculateSkillPointsOfRepetitions(assessment);
+
+        float highestSkillPointsTillNow = 0;
+        // go over all repetitions the user has made on this content
+        for(AssessmentRepetition currentRepetition : repetitionResults) {
+            // each chapter has a maximum of 10 skill levels, so we need to scale the earned skill points relative
+            // to the total skill points of the chapter times the 10 levels to calculate how many levels the user
+            // will gain
+            float relativeSkillPoints = 10.f * (currentRepetition.earnedSkillPoints / totalSkillPoints);
+
+            // only add this repetition to the skill level log if the user has improved compared to previous ones
+            if(relativeSkillPoints <= highestSkillPointsTillNow)
+                continue;
+
+            List<UUID> contentIds = new ArrayList<>(1);
+            contentIds.add(assessment.getId());
+
+            // add the log entry to the skill level. For now only add the skill points earned ("difference")
+            // because the order of the log will not be correct for now because we go through each assessment
+            // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
+            for(SkillLevelEntity skillLevelToModify : skillLevelsToModify) {
+                skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
+                        .date(currentRepetition.timestamp)
+                        .difference(relativeSkillPoints - highestSkillPointsTillNow)
+                        .associatedContentIds(contentIds)
+                        .build());
+            }
+
+            highestSkillPointsTillNow = relativeSkillPoints;
+        }
     }
 
     /**
