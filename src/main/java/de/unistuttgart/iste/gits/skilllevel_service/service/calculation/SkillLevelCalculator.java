@@ -298,7 +298,7 @@ public class SkillLevelCalculator {
 
     /**
      * Helper class which can be used to track skill points of all types. Should not be used outside of this
-     * class because it has no encapsulation.
+     * class because it has no encapsulation. Only used inside this parent class to make calculation methods more tidy.
      */
     private static class AllSkillPoints {
         public float remember = 0;
