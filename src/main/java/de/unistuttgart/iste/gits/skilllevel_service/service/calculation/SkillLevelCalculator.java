@@ -65,11 +65,7 @@ public class SkillLevelCalculator {
     private AllSkillLevelsEntity calculate(AllSkillLevelsEntity allSkillLevelsEntity,
                                            List<Assessment> assessments) {
         // find out the total amount of skill points in the current chapter
-        float totalSkillPoints = getTotalSkillPointsOfAssessments(assessments);
-
-        if(totalSkillPoints == 0) {
-            return allSkillLevelsEntity;
-        }
+        AllSkillPoints totalSkillPoints = getTotalSkillPointsOfAssessments(assessments);
 
         for (Assessment assessment : assessments) {
             addLogItemsToSkillLevelsForAssessment(allSkillLevelsEntity, assessment, totalSkillPoints);
@@ -114,23 +110,16 @@ public class SkillLevelCalculator {
      */
     private void addLogItemsToSkillLevelsForAssessment(AllSkillLevelsEntity allSkillLevelsEntity,
                                                        Assessment assessment,
-                                                       float totalSkillPoints) {
+                                                       AllSkillPoints totalSkillPoints) {
         List<SkillType> skillTypes = assessment.getAssessmentMetadata().getSkillTypes();
-        List<SkillLevelEntity> skillLevelsToModify =
-                skillTypes.stream().map(x -> getSkillLevelEntityBySkillType(allSkillLevelsEntity, x)).toList();
 
         List<AssessmentRepetition> repetitionResults = calculateSkillPointsOfRepetitions(assessment);
 
         float highestSkillPointsTillNow = 0;
         // go over all repetitions the user has made on this content
         for(AssessmentRepetition currentRepetition : repetitionResults) {
-            // each chapter has a maximum of 10 skill levels, so we need to scale the earned skill points relative
-            // to the total skill points of the chapter times the 10 levels to calculate how many levels the user
-            // will gain
-            float relativeSkillPoints = 10.f * (currentRepetition.earnedSkillPoints / totalSkillPoints);
-
             // only add this repetition to the skill level log if the user has improved compared to previous ones
-            if(relativeSkillPoints <= highestSkillPointsTillNow)
+            if(currentRepetition.earnedSkillPoints <= highestSkillPointsTillNow)
                 continue;
 
             List<UUID> contentIds = new ArrayList<>(1);
@@ -139,15 +128,24 @@ public class SkillLevelCalculator {
             // add the log entry to the skill level. For now only add the skill points earned ("difference")
             // because the order of the log will not be correct for now because we go through each assessment
             // one by one. Later we will sort the log entries by the timestamp and calculate the missing values
-            for(SkillLevelEntity skillLevelToModify : skillLevelsToModify) {
+            for(SkillType skillType : skillTypes) {
+                // each chapter has a maximum of 10 skill levels, so we need to scale the earned skill points relative
+                // to the total skill points of the chapter times the 10 levels to calculate how many levels the user
+                // will gain
+                float relativeSkillPoints
+                        = 10f * (currentRepetition.earnedSkillPoints / totalSkillPoints.getValueBySkillType(skillType));
+                float relativeSkillPointsPrevious
+                        = 10f * (highestSkillPointsTillNow / totalSkillPoints.getValueBySkillType(skillType));
+
+                SkillLevelEntity skillLevelToModify = getSkillLevelEntityBySkillType(allSkillLevelsEntity, skillType);
                 skillLevelToModify.getLog().add(SkillLevelLogEntry.builder()
                         .date(currentRepetition.timestamp)
-                        .difference(relativeSkillPoints - highestSkillPointsTillNow)
+                        .difference(relativeSkillPoints - relativeSkillPointsPrevious)
                         .associatedContentIds(contentIds)
                         .build());
             }
 
-            highestSkillPointsTillNow = relativeSkillPoints;
+            highestSkillPointsTillNow = currentRepetition.earnedSkillPoints;
         }
     }
 
@@ -264,14 +262,24 @@ public class SkillLevelCalculator {
     /**
      * Helper method which sums up all skill points of the passed assessments.
      * @param assessments The assessments to get the skill points from.
-     * @return Returns an integer containing the sum of all skill points of the passed assessments.
+     * @return Returns an AllSkillPoints object containing float values for each skill type containing the sum of all
+     * skill points of the passed assessments for that type.
      */
-    private static int getTotalSkillPointsOfAssessments(List<Assessment> assessments) {
-        int totalSkillPoints = 0;
+    private static AllSkillPoints getTotalSkillPointsOfAssessments(List<Assessment> assessments) {
+        AllSkillPoints skillPoints = new AllSkillPoints();
+
         for(Assessment assessment : assessments) {
-            totalSkillPoints += assessment.getAssessmentMetadata().getSkillPoints();
+            for(SkillType skillType : assessment.getAssessmentMetadata().getSkillTypes()) {
+                int value = assessment.getAssessmentMetadata().getSkillPoints();
+                switch (skillType) {
+                    case REMEMBER -> skillPoints.remember += value;
+                    case UNDERSTAND -> skillPoints.understand += value;
+                    case APPLY -> skillPoints.apply += value;
+                    case ANALYSE -> skillPoints.analyze += value;
+                }
+            }
         }
-        return totalSkillPoints;
+        return skillPoints;
     }
 
     /**
@@ -285,6 +293,26 @@ public class SkillLevelCalculator {
         public AssessmentRepetition(OffsetDateTime timestamp, float earnedSkillPoints) {
             this.timestamp = timestamp;
             this.earnedSkillPoints = earnedSkillPoints;
+        }
+    }
+
+    /**
+     * Helper class which can be used to track skill points of all types. Should not be used outside of this
+     * class because it has no encapsulation. Only used inside this parent class to make calculation methods more tidy.
+     */
+    private static class AllSkillPoints {
+        public float remember = 0;
+        public float understand = 0;
+        public float apply = 0;
+        public float analyze = 0;
+
+        public float getValueBySkillType(SkillType skillType) {
+            return switch (skillType) {
+                case UNDERSTAND -> understand;
+                case REMEMBER -> remember;
+                case APPLY -> apply;
+                case ANALYSE -> analyze;
+            };
         }
     }
 }
