@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.*;
 @ContextConfiguration(classes = {MockContentServiceClientConfiguration.class})
 @TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels"})
 @GraphQlApiTest
-public class SkillLevelMultipleSkillTypesTest {
+class SkillLevelMultipleSkillTypesTest {
 
     @Autowired
     private ContentServiceClient contentServiceClient;
