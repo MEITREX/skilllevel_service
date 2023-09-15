@@ -72,8 +72,13 @@ public class SkillLevelService {
         List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
 
         // if an entity was found of every chapter, we're done
-        if(entities.size() == chapterIds.size())
-            return entities;
+        if(entities.size() == chapterIds.size()) {
+            return chapterIds.stream().map(id -> entities.stream()
+                    .filter(x -> x.getId().getChapterId().equals(id))
+                    .findFirst()
+                    .orElseThrow()).toList();
+        }
+
 
         // the list might not contain an entity for every chapter if that entity hasn't been created yet. Let's find
         // the entities that are still missing
