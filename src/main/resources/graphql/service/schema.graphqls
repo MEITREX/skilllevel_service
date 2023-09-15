@@ -16,7 +16,7 @@ type Mutation {
   Triggers the recalculation of the skill level of the user.
   This is done automatically at some time in the night.
 
-  The purpose of this mutation is to allow testing of the reward score and demonstrate the functionality.
+  The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
   """
   recalculateLevels(chapterId: UUID!, userId: UUID!): SkillLevels! @deprecated(reason: "Only for testing purposes. Will be removed.")
 }
