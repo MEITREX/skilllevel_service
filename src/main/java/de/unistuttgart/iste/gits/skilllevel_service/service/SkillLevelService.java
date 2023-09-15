@@ -32,6 +32,8 @@ public class SkillLevelService {
      */
     public SkillLevels recalculateLevels(UUID chapterId, UUID userId) {
         try {
+            log.info("Recalculating skill levels for chapter " + chapterId.toString());
+
             AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
 
             skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
