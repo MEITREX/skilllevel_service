@@ -113,7 +113,7 @@ public class ContentServiceClient {
                             }
                             ...on Assessment {
                                 assessmentMetadata {
-                                    skillType
+                                    skillTypes
                                     skillPoints
                                 }
                             }
