@@ -10,14 +10,14 @@ sidecar.
 
 ### Relevant for deployment
 
-| Name                       | Description                        | Value in Dev Environment                            | Value in Prod Environment                                                  |
-|----------------------------|------------------------------------|-----------------------------------------------------|----------------------------------------------------------------------------|
-| spring.datasource.url      | PostgreSQL database URL            | jdbc:postgresql://localhost:8032/skilllevel_service | jdbc:postgresql://skilllevel-service-db-postgresql:5432/skilllevel-service |
-| spring.datasource.username | Database username                  | root                                                | gits                                                                       |
-| spring.datasource.password | Database password                  | root                                                | *secret*                                                                   |
-| DAPR_HTTP_PORT             | Dapr HTTP Port                     | 8000                                                | 3500                                                                       |
-| server.port                | Port on which the application runs | 8001                                                | 8001                                                                       |
-
+| Name                       | Description                        | Value in Dev Environment                                         | Value in Prod Environment                                                  |
+|----------------------------|------------------------------------|------------------------------------------------------------------|----------------------------------------------------------------------------|
+| spring.datasource.url      | PostgreSQL database URL            | jdbc:postgresql://localhost:8032/skilllevel_service              | jdbc:postgresql://skilllevel-service-db-postgresql:5432/skilllevel-service |
+| spring.datasource.username | Database username                  | root                                                             | gits                                                                       |
+| spring.datasource.password | Database password                  | root                                                             | *secret*                                                                   |
+| DAPR_HTTP_PORT             | Dapr HTTP Port                     | 8000                                                             | 3500                                                                       |
+| server.port                | Port on which the application runs | 8001                                                             | 8001                                                                       |
+| content_service.url        | URL for content service GraphQL    | http://localhost:3500/v1.0/invoke/content-service/method/graphql | http://app-content:4001/graphql                                            |
 ### Other properties
 | Name                                      | Description                               | Value in Dev Environment                                       | Value in Prod Environment               |
 |-------------------------------------------|-------------------------------------------|----------------------------------------------------------------|-----------------------------------------|
@@ -33,7 +33,7 @@ sidecar.
 | hibernate.create_empty_composites.enabled | Enable empty composite types in Hibernate | true                                                           | true                                    |
 | DAPR_GRPC_PORT                            | Dapr gRPC Port                            | -                                                              | 50001                                   |
 | logging.level.root                        | Logging level for root logger             | INFO                                                           | -                                       |
-| content_service.url                       | URL for content service GraphQL           | http://localhost:3500/v1.0/invoke/content-service/method/graphql | http://app-content:4001/graphql         |
+
 
 ## Dependencies to Other Services
 ### Events
