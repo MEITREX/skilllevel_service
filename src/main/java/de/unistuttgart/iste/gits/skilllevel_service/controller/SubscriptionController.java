@@ -1,10 +1,8 @@
 package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
 import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
-import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
-import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import io.dapr.Topic;
@@ -13,11 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -36,15 +32,15 @@ public class SubscriptionController {
      */
     @Topic(name = "user-progress-updated", pubsubName = "gits")
     @PostMapping(path = "/skilllevel-service/user-progress-pubsub")
-    public Mono<Void> onUserProgress(@RequestBody CloudEvent<UserProgressLogEvent> cloudEvent) {
+    public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressLogEvent> cloudEvent) {
         log.info("Received event: {}", cloudEvent.getData());
 
         return Mono.fromRunnable(() -> {
             try {
-                UUID chapterId =
+                final UUID chapterId =
                         contentServiceClient.getChapterIdOfContent(cloudEvent.getData().getContentId());
                 skillLevelService.recalculateLevels(chapterId, cloudEvent.getData().getUserId());
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing user progress event", e);
@@ -56,18 +52,18 @@ public class SubscriptionController {
      * Dapr topic subscription to delete the stored skill level data of users for a specific chapter when the chapter
      * is deleted.
      */
-    @Topic(name = "chapter-changes", pubsubName = "gits")
-    @PostMapping(path = "/skilllevel-service/chapter-changes-pubsub")
-    public Mono<Void> onChapterChanged(@RequestBody CloudEvent<ChapterChangeEvent> cloudEvent) {
+    @Topic(name = "chapter-changed", pubsubName = "gits")
+    @PostMapping(path = "/skilllevel-service/chapted-changes-pubsub")
+    public Mono<Void> onChapterChanged(@RequestBody final CloudEvent<ChapterChangeEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             try {
                 if(cloudEvent.getData().getOperation() != CrudOperation.DELETE)
                     return;
 
-                for(UUID chapterId : cloudEvent.getData().getChapterIds()) {
+                for(final UUID chapterId : cloudEvent.getData().getChapterIds()) {
                     skillLevelService.deleteSkillLevelsForChapter(chapterId);
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing course change event", e);
