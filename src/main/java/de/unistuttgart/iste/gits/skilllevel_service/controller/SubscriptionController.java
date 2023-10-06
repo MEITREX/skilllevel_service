@@ -2,7 +2,7 @@ package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
 import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
 import de.unistuttgart.iste.gits.common.event.CrudOperation;
-import de.unistuttgart.iste.gits.common.event.UserProgressLogEvent;
+import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import io.dapr.Topic;
@@ -32,15 +32,13 @@ public class SubscriptionController {
      */
     @Topic(name = "user-progress-updated", pubsubName = "gits")
     @PostMapping(path = "/skilllevel-service/user-progress-pubsub")
-    public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressLogEvent> cloudEvent) {
+    public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         log.info("Received event: {}", cloudEvent.getData());
 
         return Mono.fromRunnable(() -> {
             try {
-                final UUID chapterId =
-                        contentServiceClient.getChapterIdOfContent(cloudEvent.getData().getContentId());
-                skillLevelService.recalculateLevels(chapterId, cloudEvent.getData().getUserId());
-            } catch (final Exception e) {
+                skillLevelService.recalculateLevels(cloudEvent.getData().getChapterId(), cloudEvent.getData().getUserId());
+            } catch (Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing user progress event", e);
