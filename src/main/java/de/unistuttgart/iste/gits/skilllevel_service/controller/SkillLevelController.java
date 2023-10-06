@@ -1,5 +1,6 @@
 package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
+import de.unistuttgart.iste.gits.common.user_handling.GlobalPermissionAccessValidator;
 import de.unistuttgart.iste.gits.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.gits.generated.dto.SkillLevels;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
@@ -11,6 +12,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,19 +22,21 @@ import java.util.UUID;
 public class SkillLevelController {
 
     private final SkillLevelService skilllevelService;
+    public static final String INTERNAL_NOAUTH_PREFIX = "_internal_noauth_";
 
-    @QueryMapping
-    public List<SkillLevels> userSkillLevelsByChapterIds(@Argument List<UUID> chapterIds, @ContextValue LoggedInUser currentUser) {
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByChapterIds")
+    public List<SkillLevels> userSkillLevelsByChapterIds(@Argument final List<UUID> chapterIds, @ContextValue final LoggedInUser currentUser) {
         return skilllevelService.getSkillLevelsForChapters(chapterIds, currentUser.getId());
     }
 
-    @QueryMapping
-    public List<SkillLevels> skillLevelsForUserByChapterIds(@Argument List<UUID> chapterIds, @Argument UUID userId) {
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillLevelsForUserByChapterIds")
+    public List<SkillLevels> skillLevelsForUserByChapterIds(@Argument final List<UUID> chapterIds, @Argument final UUID userId) {
         return skilllevelService.getSkillLevelsForChapters(chapterIds, userId);
     }
 
     @MutationMapping
-    public SkillLevels recalculateLevels(@Argument UUID chapterId, @Argument UUID userId) {
+    public SkillLevels recalculateLevels(@Argument final UUID chapterId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
+        GlobalPermissionAccessValidator.validateUserHasGlobalPermission(currentUser, Collections.emptySet());
         return skilllevelService.recalculateLevels(chapterId, userId);
     }
 }
