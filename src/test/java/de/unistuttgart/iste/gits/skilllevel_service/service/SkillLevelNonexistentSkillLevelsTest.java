@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ContextConfiguration(classes = {MockContentServiceClientConfiguration.class})
+@ContextConfiguration(classes = MockContentServiceClientConfiguration.class)
 @TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels"})
 @GraphQlApiTest
 class SkillLevelNonexistentSkillLevelsTest {
@@ -31,10 +31,10 @@ class SkillLevelNonexistentSkillLevelsTest {
     @Transactional
     @Commit
     void testGetNonexistentSkillLevels() {
-        UUID chapterId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+        final UUID chapterId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
-        SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
+        final SkillLevels skillLevels = skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         assertThat(skillLevels.getAnalyze().getValue()).isZero();
         assertThat(skillLevels.getApply().getValue()).isZero();
@@ -42,7 +42,7 @@ class SkillLevelNonexistentSkillLevelsTest {
         assertThat(skillLevels.getRemember().getValue()).isZero();
 
         // assert that stuff has been placed in the db correctly as well
-        AllSkillLevelsEntity entity = repository.findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId))
+        final AllSkillLevelsEntity entity = repository.findById(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId))
                 .orElseThrow();
 
         assertThat(entity.getId().getChapterId()).isEqualTo(chapterId);

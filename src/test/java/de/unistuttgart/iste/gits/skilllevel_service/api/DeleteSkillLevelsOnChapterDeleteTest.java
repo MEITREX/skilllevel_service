@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ContextConfiguration(classes = {MockContentServiceClientConfiguration.class})
+@ContextConfiguration(classes = MockContentServiceClientConfiguration.class)
 @TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels"})
 @GraphQlApiTest
 class DeleteSkillLevelsOnChapterDeleteTest {
@@ -36,8 +36,8 @@ class DeleteSkillLevelsOnChapterDeleteTest {
     @Commit
     void testDeleteSkillLevelsOnChapterDelete() {
         // firstly, initialize the skill levels for some chapter
-        UUID userId = UUID.randomUUID();
-        UUID chapterId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final UUID chapterId = UUID.randomUUID();
         skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         // test that the skill levels were stored in the database
@@ -57,8 +57,8 @@ class DeleteSkillLevelsOnChapterDeleteTest {
     @Commit
     void testDoNotDeleteSkillLevelsOnChapterUpdate() {
         // firstly, initialize the skill levels for some chapter
-        UUID userId = UUID.randomUUID();
-        UUID chapterId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final UUID chapterId = UUID.randomUUID();
         skillLevelService.getSkillLevelsForChapters(List.of(chapterId), userId).get(0);
 
         // test that the skill levels were stored in the database

@@ -3,7 +3,7 @@ package de.unistuttgart.iste.gits.skilllevel_service.controller;
 import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
 import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
-import de.unistuttgart.iste.gits.skilllevel_service.service.ContentServiceClient;
+import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import io.dapr.Topic;
 import io.dapr.client.domain.CloudEvent;
@@ -24,7 +24,6 @@ import java.util.UUID;
 @Slf4j
 public class SubscriptionController {
     private final SkillLevelService skillLevelService;
-    private final ContentServiceClient contentServiceClient;
 
     /**
      * Dapr topic subscription to recalculate the skill levels of a user for a specific chapter when the user
@@ -55,10 +54,10 @@ public class SubscriptionController {
     public Mono<Void> onChapterChanged(@RequestBody final CloudEvent<ChapterChangeEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             try {
-                if(cloudEvent.getData().getOperation() != CrudOperation.DELETE)
+                if (cloudEvent.getData().getOperation() != CrudOperation.DELETE)
                     return;
 
-                for(final UUID chapterId : cloudEvent.getData().getChapterIds()) {
+                for (final UUID chapterId : cloudEvent.getData().getChapterIds()) {
                     skillLevelService.deleteSkillLevelsForChapter(chapterId);
                 }
             } catch (final Exception e) {
