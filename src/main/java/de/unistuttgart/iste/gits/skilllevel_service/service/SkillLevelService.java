@@ -26,53 +26,55 @@ public class SkillLevelService {
     /**
      * Recalculates the skill levels for a given user, course, and chapter.
      *
-     * @param chapterId  the id of the chapter
-     * @param userId   the id of the user
+     * @param chapterId the id of the chapter
+     * @param userId    the id of the user
      * @return the recalculated reward scores
      */
-    public SkillLevels recalculateLevels(UUID chapterId, UUID userId) {
+    public SkillLevels recalculateLevels(final UUID chapterId, final UUID userId) {
         try {
             log.info("Recalculating skill levels for chapter " + chapterId.toString());
 
-            AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
+            final AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
 
             skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
 
-            AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
+            final AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
 
             return mapper.entityToDto(result);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
         }
     }
 
     /**
      * Returns the skill levels for a given user and a list of chapters.
+     *
      * @param chapterIds The ids of the chapters to get the skill levels for
-     * @param userId The id of the user to get the skill levels for
+     * @param userId     The id of the user to get the skill levels for
      * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
      */
-    public List<SkillLevels> getSkillLevelsForChapters(List<UUID> chapterIds, UUID userId) {
+    public List<SkillLevels> getSkillLevelsForChapters(final List<UUID> chapterIds, final UUID userId) {
         return getOrInitializeSkillLevelEntitiesForChapters(chapterIds, userId).stream().map(mapper::entityToDto).toList();
     }
 
     /**
      * Returns the skill levels for a given user and a list of chapters. If the skill levels for a chapter don't exist
      * yet, they will be initialized in the database with a value of 0.
+     *
      * @param chapterIds The ids of the chapters to get the skill levels for
-     * @param userId The id of the user to get the skill levels for
+     * @param userId     The id of the user to get the skill levels for
      * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
      */
-    private List<AllSkillLevelsEntity> getOrInitializeSkillLevelEntitiesForChapters(List<UUID> chapterIds,
-                                                                                    UUID userId) {
-        List<AllSkillLevelsEntity.PrimaryKey> primaryKeys
+    private List<AllSkillLevelsEntity> getOrInitializeSkillLevelEntitiesForChapters(final List<UUID> chapterIds,
+                                                                                    final UUID userId) {
+        final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys
                 = chapterIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
 
         // try to get the entities for the chapters
-        List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
+        final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
 
         // if an entity was found of every chapter, we're done
-        if(entities.size() == chapterIds.size()) {
+        if (entities.size() == chapterIds.size()) {
             return chapterIds.stream().map(id -> entities.stream()
                     .filter(x -> x.getId().getChapterId().equals(id))
                     .findFirst()
@@ -82,13 +84,13 @@ public class SkillLevelService {
 
         // the list might not contain an entity for every chapter if that entity hasn't been created yet. Let's find
         // the entities that are still missing
-        List<UUID> chapterIdsWithMissingEntities = new ArrayList<>(chapterIds);
+        final List<UUID> chapterIdsWithMissingEntities = new ArrayList<>(chapterIds);
         chapterIdsWithMissingEntities.removeIf(x -> entities.stream().anyMatch(y -> y.getId().getChapterId().equals(x)));
 
         // create the missing entities
-        List<AllSkillLevelsEntity> createdEntities = new ArrayList<>();
-        for(UUID chapterId : chapterIdsWithMissingEntities) {
-            AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+        final List<AllSkillLevelsEntity> createdEntities = new ArrayList<>(chapterIdsWithMissingEntities.size());
+        for (final UUID chapterId : chapterIdsWithMissingEntities) {
+            final AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
             newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
             newEntity.setRemember(initializeSkillLevelEntity(0));
             newEntity.setUnderstand(initializeSkillLevelEntity(0));
@@ -102,7 +104,7 @@ public class SkillLevelService {
         // combine the entities that were found with the newly created ones in the order of the chapterIds list
         return chapterIds.stream()
                 .map(chapterId -> {
-                    Optional<AllSkillLevelsEntity> entity = entities.stream()
+                    final Optional<AllSkillLevelsEntity> entity = entities.stream()
                             .filter(x -> x.getId().getChapterId().equals(chapterId))
                             .findFirst();
 
@@ -115,11 +117,12 @@ public class SkillLevelService {
 
     /**
      * Initializes a skill level entity with the given initial value.
+     *
      * @param initialValue The initial value to set the skill level to
      * @return The initialized skill level entity
      */
-    private SkillLevelEntity initializeSkillLevelEntity(int initialValue) {
-        SkillLevelEntity skillLevelEntity = new SkillLevelEntity();
+    private SkillLevelEntity initializeSkillLevelEntity(final int initialValue) {
+        final SkillLevelEntity skillLevelEntity = new SkillLevelEntity();
         skillLevelEntity.setValue(initialValue);
         skillLevelEntity.setLog(new ArrayList<>());
         return skillLevelEntity;
@@ -127,10 +130,11 @@ public class SkillLevelService {
 
     /**
      * Deletes all skill levels for a given chapter.
+     *
      * @param chapterId The id of the chapter to delete the skill levels for
      */
-    public void deleteSkillLevelsForChapter(UUID chapterId) {
-        List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
+    public void deleteSkillLevelsForChapter(final UUID chapterId) {
+        final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
         skillLevelsRepository.deleteAll(entities);
     }
 }

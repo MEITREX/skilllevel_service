@@ -2,6 +2,8 @@ package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
+import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
+import de.unistuttgart.iste.gits.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import jakarta.transaction.Transactional;
@@ -19,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {MockContentServiceClientConfiguration.class})
+@ContextConfiguration(classes = MockContentServiceClientConfiguration.class)
 @TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels"})
 @GraphQlApiTest
 class SkillLevelRepetitionNotEnoughTimePassedImprovedTest {
@@ -36,14 +38,14 @@ class SkillLevelRepetitionNotEnoughTimePassedImprovedTest {
     @Test
     @Transactional
     @Commit
-    void testRepetitionNotEnoughTimePassedImproved() {
-        UUID chapterId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    void testRepetitionNotEnoughTimePassedImproved() throws ContentServiceConnectionException {
+        final UUID chapterId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
-        UUID contentId = UUID.randomUUID();
+        final UUID contentId = UUID.randomUUID();
 
-        List<Content> contents = List.of(
+        final List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId)
                         .setMetadata(ContentMetadata.builder()
@@ -98,12 +100,12 @@ class SkillLevelRepetitionNotEnoughTimePassedImprovedTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
+        when(contentServiceClient.queryContentsOfChapter(any(), any())).thenReturn(contents);
 
-        SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
+        final SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
-        float skillValue1 = 10 * 0.5f * (1.f / 3);
-        float skillValue2 = 10 * 1.f * (1.f / 3);
+        final float skillValue1 = 10 * 0.5f * (1.f / 3);
+        final float skillValue2 = 10 * 1.f * (1.f / 3);
 
         assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillValue2);
 

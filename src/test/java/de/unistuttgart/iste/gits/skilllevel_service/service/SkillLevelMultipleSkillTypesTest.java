@@ -2,6 +2,8 @@ package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
+import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
+import de.unistuttgart.iste.gits.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import jakarta.transaction.Transactional;
@@ -32,7 +34,7 @@ class SkillLevelMultipleSkillTypesTest {
     @Test
     @Transactional
     @Commit
-    void testMultipleSkillTypes() {
+    void testMultipleSkillTypes() throws ContentServiceConnectionException {
         UUID chapterId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
@@ -161,7 +163,7 @@ class SkillLevelMultipleSkillTypesTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
+        when(contentServiceClient.queryContentsOfChapter(any(), any())).thenReturn(contents);
 
         SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 

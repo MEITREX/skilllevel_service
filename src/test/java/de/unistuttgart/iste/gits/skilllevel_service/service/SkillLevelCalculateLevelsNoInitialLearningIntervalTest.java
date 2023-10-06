@@ -2,6 +2,8 @@ package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.gits.common.testutil.TablesToDelete;
+import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
+import de.unistuttgart.iste.gits.content_service.exception.ContentServiceConnectionException;
 import de.unistuttgart.iste.gits.generated.dto.*;
 import de.unistuttgart.iste.gits.skilllevel_service.test_util.MockContentServiceClientConfiguration;
 import jakarta.transaction.Transactional;
@@ -19,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {MockContentServiceClientConfiguration.class})
+@ContextConfiguration(classes = MockContentServiceClientConfiguration.class)
 @TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels"})
 @GraphQlApiTest
 class SkillLevelCalculateLevelsNoInitialLearningIntervalTest {
@@ -32,14 +34,14 @@ class SkillLevelCalculateLevelsNoInitialLearningIntervalTest {
     @Test
     @Transactional
     @Commit
-    void testCalculateLevelsNoInitialLearningInterval() {
-        UUID chapterId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
+    void testCalculateLevelsNoInitialLearningInterval() throws ContentServiceConnectionException {
+        final UUID chapterId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
         // let's create some content, so we can calculate the user's skill levels based on their progress with it
-        UUID contentId1 = UUID.randomUUID();
-        UUID contentId2 = UUID.randomUUID();
-        List<Content> contents = List.of(
+        final UUID contentId1 = UUID.randomUUID();
+        final UUID contentId2 = UUID.randomUUID();
+        final List<Content> contents = List.of(
                 FlashcardSetAssessment.builder()
                         .setId(contentId1)
                         .setMetadata(ContentMetadata.builder()
@@ -118,13 +120,13 @@ class SkillLevelCalculateLevelsNoInitialLearningIntervalTest {
                         .build()
         );
 
-        when(contentServiceClient.getContentsOfChapter(any(), any())).thenReturn(contents);
+        when(contentServiceClient.queryContentsOfChapter(any(), any())).thenReturn(contents);
 
-        SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
+        final SkillLevels skillLevels = skillLevelService.recalculateLevels(chapterId, userId);
 
         // 10 levels can be gained per chapter. The content we completed gives 3 of 3+4=7 skill points of
         // the chapter, and we completed it the first time so multiply by (1/3)
-        float skillValue = 10 * (3.f / (3 + 4));
+        final float skillValue = 10 * (3.f / (3 + 4));
 
         assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillValue);
 
