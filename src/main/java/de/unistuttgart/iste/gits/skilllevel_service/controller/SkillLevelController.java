@@ -12,8 +12,8 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -36,7 +36,7 @@ public class SkillLevelController {
 
     @MutationMapping
     public SkillLevels recalculateLevels(@Argument final UUID chapterId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
-        GlobalPermissionAccessValidator.validateUserHasGlobalPermission(currentUser, Collections.emptySet());
+        GlobalPermissionAccessValidator.validateUserHasGlobalPermission(currentUser, Set.of(LoggedInUser.RealmRole.SUPER_USER));
         return skilllevelService.recalculateLevels(chapterId, userId);
     }
 }
