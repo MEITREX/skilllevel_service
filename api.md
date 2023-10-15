@@ -43,12 +43,14 @@
 </thead>
 <tbody>
 <tr>
-<td colspan="2" valign="top"><strong>userSkillLevelsByChapterIds</strong></td>
+<td colspan="2" valign="top"><strong>_internal_noauth_userSkillLevelsByChapterIds</strong></td>
 <td valign="top">[<a href="#skilllevels">SkillLevels</a>!]!</td>
 <td>
 
 
 Get the skill levels of the current user for all skill types for a list of chapter ids.
+⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+any permissions check and should not be called without any validation of the caller's permissions. ⚠️
 
 </td>
 </tr>
@@ -58,12 +60,14 @@ Get the skill levels of the current user for all skill types for a list of chapt
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>skillLevelsForUserByChapterIds</strong></td>
+<td colspan="2" valign="top"><strong>_internal_noauth_skillLevelsForUserByChapterIds</strong></td>
 <td valign="top">[<a href="#skilllevels">SkillLevels</a>!]!</td>
 <td>
 
 
 Get the skill levels of the specified user for all skill types for a list of chapter ids.
+⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+any permissions check and should not be called without any validation of the caller's permissions. ⚠️
 
 </td>
 </tr>
@@ -103,6 +107,7 @@ Get the skill levels of the specified user for all skill types for a list of cha
   This is done automatically at some time in the night.
 
   The purpose of this mutation is to allow testing of the skill level score and demonstrate the functionality.
+  🔒 The user must be a super-user, otherwise an exception is thrown.
 
 <p>⚠️ <strong>DEPRECATED</strong></p>
 <blockquote>
