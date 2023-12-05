@@ -14,7 +14,7 @@ In case of manual test, please document the test well including a set of user in
 In case of automated tests, the test coverage should be reasonably high, especially on Service classes and other classes with complex logic.
     
 ## Checklist before requesting a review
-- [ ] My code follows the [coding guidelines](https://github.com/IT-REX-Platform/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
+- [ ] My code follows the [coding guidelines](https://github.com/MEITREX/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] My code fulfills all acceptance criteria
@@ -22,13 +22,13 @@ In case of automated tests, the test coverage should be reasonably high, especia
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] The test coverage (line and branch) is reasonably high, especially on Service classes and other classes with complex logic
 - [ ] I have made corresponding changes to the documentation
-- [ ] I have added explanation of architectural decision and rationales to [wiki/adr](https://github.com/IT-REX-Platform/wiki/tree/main/adr)
+- [ ] I have added explanation of architectural decision and rationales to [wiki/adr](https://github.com/MEITREX/wiki/tree/main/adr)
 - [ ] I have updated the changes in the ticket description
 
 ## Checklist for reviewer
 - [ ] The code works and does not throw errors
 - [ ] The code is easy to understand and there are no confusing parts
-- [ ] The code follows the [coding guidelines](https://github.com/IT-REX-Platform/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
+- [ ] The code follows the [coding guidelines](https://github.com/MEITREX/wiki/blob/main/dev-manuals/backend/coding-guidelines.md) of this project
 - [ ] The code change accomplishes what it is supposed to do
 - [ ] I cannot think of any use case in which the code does not behave as intended
 - [ ] The added and existing tests reasonably cover the code change
