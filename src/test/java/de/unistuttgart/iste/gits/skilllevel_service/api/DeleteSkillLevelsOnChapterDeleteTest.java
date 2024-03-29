@@ -44,7 +44,7 @@ class DeleteSkillLevelsOnChapterDeleteTest {
         assertThat(repository.findAll()).isNotEmpty();
 
         // then, call the subscription controller as if a chapter delete event was received
-        subscriptionController.onChapterChanged(
+        subscriptionController.onCourseChanged(
                 new CloudEvent<>(null, null, null, null, null,
                         new ChapterChangeEvent(List.of(chapterId), CrudOperation.DELETE))).block();
 
@@ -65,7 +65,7 @@ class DeleteSkillLevelsOnChapterDeleteTest {
         assertThat(repository.findAll()).isNotEmpty();
 
         // then, call the subscription controller as if a chapter delete event was received
-        subscriptionController.onChapterChanged(
+        subscriptionController.onCourseChanged(
                 new CloudEvent<>(null, null, null, null, null,
                         new ChapterChangeEvent(List.of(chapterId), CrudOperation.UPDATE))).block();
 

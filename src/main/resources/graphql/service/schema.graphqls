@@ -4,13 +4,39 @@ type Query {
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_userSkillLevelsByChapterIds(chapterIds: [UUID!]!): [SkillLevels!]!
+  _internal_noauth_userSkillLevelsByChapterIds(chapterIds: [UUID!]!): [SkillLevels!]!@deprecated(reason: "Old query, will be replaced.")
   """
   Get the skill levels of the specified user for all skill types for a list of chapter ids.
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_skillLevelsForUserByChapterIds(chapterIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
+  _internal_noauth_skillLevelsForUserByChapterIds(chapterIds: [UUID!]!, userId: UUID!): [SkillLevels!]!@deprecated(reason: "Old query, will be replaced.")
+  """
+  Get for current user the users current compentencies for the given the course, including for each compentency the covered Bloom Level.
+  ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+  any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+  """
+  _internal_noauth_userSkillLevelsByCourseId(courseId: [UUID!]!): [SkillLevelsNew!]!
+  """
+  Get for the specific student the students' current compentencies for the given course, including for each compentency the covered Bloom Level .
+  ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+  any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+  """
+  _internal_noauth_skillLevelsForUserByCourseIds(courseId: [UUID]!, userId: UUID!): [SkillLevelNew!]!
+  """
+  Get for the specific student the students' current knowledge of the given compentency, including all covered Levels of Blooms Taxonomy .
+  ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+  any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+  """
+  _internal_noauth_skillLevelForUserBySkillId(skillId: UUID!, userId: UUID!): [SkillLevelNew!]!
+
+    """
+  Get for the current student the students' current knowledge of the given compentency, including all covered Levels of Blooms Taxonomy .
+  ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
+  any permissions check and should not be called without any validation of the caller's permissions. ⚠️
+  """
+  _internal_noauth_usersskillLevelBySkillId(skillId: UUID!): [SkillLevelNew!]!
+
 }
 
 type Mutation {
@@ -33,19 +59,27 @@ type SkillLevels {
   """
   remember represents how much user remember the concept
   """
-  remember: SkillLevel!
+  remember: SkillLevel
   """
   understand represents how well the user understands learned content.
   """
-  understand: SkillLevel!
+  understand: SkillLevel
   """
   apply represents the how well user applies the learned concept during assessment.
   """
-  apply: SkillLevel!
+  apply: SkillLevel
   """
   apply is how much user can evaluate information and draw conclusions
   """
-  analyze: SkillLevel!
+  analyze: SkillLevel
+  """
+  evaluate represent how well a user can use the learned content to evaluate
+  """
+  evaluate:SkillLevel
+  """
+  create represents how well a user can create new things based on the learned content
+  """
+  evaluate:SkillLevel
 }
 
 """
@@ -54,7 +88,7 @@ The skill level of a user.
 type SkillLevel {
   """
   The value of the skill level.
-  levels are between 0 and 100.
+  levels are between 0 and 1.
   """
   value: Float!
   """
@@ -86,5 +120,5 @@ type SkillLevelLogItem {
   """
   The ids of the contents that are associated with the change.
   """
-  associatedContentIds: [UUID!]!
+  associatedItemId: UUID!
 }

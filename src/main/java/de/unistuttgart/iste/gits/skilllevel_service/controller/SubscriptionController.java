@@ -1,8 +1,10 @@
 package de.unistuttgart.iste.gits.skilllevel_service.controller;
 
-import de.unistuttgart.iste.gits.common.event.ChapterChangeEvent;
+import de.unistuttgart.iste.gits.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.gits.common.event.CrudOperation;
 import de.unistuttgart.iste.gits.common.event.UserProgressUpdatedEvent;
+import de.unistuttgart.iste.gits.common.event.ItemChangeEvent;
+import de.unistuttgart.iste.gits.common.event.ItemResponse;
 import de.unistuttgart.iste.gits.content_service.client.ContentServiceClient;
 import de.unistuttgart.iste.gits.skilllevel_service.service.SkillLevelService;
 import io.dapr.Topic;
@@ -36,7 +38,7 @@ public class SubscriptionController {
 
         return Mono.fromRunnable(() -> {
             try {
-                skillLevelService.recalculateLevels(cloudEvent.getData().getChapterId(), cloudEvent.getData().getUserId());
+                skillLevelService.recalculateLevels(cloudEvent.getData().getCourseId(), cloudEvent.getData().getUserId(),cloudEvent.getData().getResponses());
             } catch (Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
@@ -46,24 +48,39 @@ public class SubscriptionController {
     }
 
     /**
-     * Dapr topic subscription to delete the stored skill level data of users for a specific chapter when the chapter
+     * Dapr topic subscription to delete the stored skill level data of users for a specific course when the course
      * is deleted.
      */
-    @Topic(name = "chapter-changed", pubsubName = "gits")
-    @PostMapping(path = "/skilllevel-service/chapted-changes-pubsub")
-    public Mono<Void> onChapterChanged(@RequestBody final CloudEvent<ChapterChangeEvent> cloudEvent) {
+    @Topic(name = "course-changed", pubsubName = "gits")
+    @PostMapping(path = "/skilllevel-service/course-changes-pubsub")
+    public Mono<Void> onCourseChanged(@RequestBody final CloudEvent<CourseChangeEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             try {
                 if (cloudEvent.getData().getOperation() != CrudOperation.DELETE)
                     return;
-
-                for (final UUID chapterId : cloudEvent.getData().getChapterIds()) {
-                    skillLevelService.deleteSkillLevelsForChapter(chapterId);
-                }
+                skillLevelService.deleteSkillLevelsForCourse(cloudEvent.getData().getCourseId());
             } catch (final Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing course change event", e);
+            }
+        });
+    }
+    /**
+     * Dapr topic subscription to delete the stored item data of users when the corresponding item was deleted
+     */
+    @Topic(name="item-changed",pubsubName = "gits")
+    @PostMapping(path="/skilllevel-service/item-changed-pubsub")
+    public Mono<Void> onItemChanged(@RequestBody final CloudEvent<ItemChangeEvent> cloudEvent){
+        return Mono.fromRunnable(() -> {
+            try {
+                if (cloudEvent.getData().getOperation() != CrudOperation.DELETE)
+                    return;
+                skillLevelService.deleteItemDifficulty(cloudEvent.getData().getItemId());
+            } catch (final Exception e) {
+                // we need to catch all exceptions because otherwise if some invalid data is in the message queue
+                // it will never get processed and instead the service will just crash forever
+                log.error("Error while processing item change event", e);
             }
         });
     }

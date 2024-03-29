@@ -11,5 +11,7 @@ import java.util.UUID;
 @Repository
 @Profile("!test")
 public interface AllSkillLevelsRepository extends JpaRepository<AllSkillLevelsEntity, AllSkillLevelsEntity.PrimaryKey> {
-    List<AllSkillLevelsEntity> findByIdChapterId(UUID chapterId);
+
+    List<AllSkillLevelsEntity> findByIdCourseId(UUID courseId);
+
 }

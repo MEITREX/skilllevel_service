@@ -18,6 +18,13 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BloomLevelAbilityEntity {
 
+    public BloomLevelAbilityEntity(UUID userId, BloomLevel bloomLevel, float ability, int numberOfPreviousAttempts){
+        this.userId=userId;
+        this.bloomLevel=bloomLevel;
+        this.ability=ability;
+        this.numberOfPreviousAttempts=0;
+    }
+
     @Generated
     @Id
     private UUID id;

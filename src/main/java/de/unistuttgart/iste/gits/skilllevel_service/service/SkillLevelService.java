@@ -1,10 +1,14 @@
 package de.unistuttgart.iste.gits.skilllevel_service.service;
 
 import de.unistuttgart.iste.gits.generated.dto.*;
+import de.unistuttgart.iste.gits.common.event.ItemResponse;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.SkillAbilityEntity;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.entity.SkillLevelEntity;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.ItemDifficultyRepository;
+import de.unistuttgart.iste.gits.skilllevel_service.persistence.repository.SkillAbilityRepository;
 import de.unistuttgart.iste.gits.skilllevel_service.service.calculation.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,24 +27,23 @@ public class SkillLevelService {
     private final SkillLevelMapper mapper;
     private final SkillLevelCalculator skillLevelCalculator;
 
+    private final SkillAbilityRepository skillAbilityRepository;
+
+    private final ItemDifficultyRepository itemDifficultyRepository;
+
     /**
-     * Recalculates the skill levels for a given user, course, and chapter.
+     * Recalculates the skill levels for a given user and responses.
      *
-     * @param chapterId the id of the chapter
+     * @param courseId the id of the course
      * @param userId    the id of the user
+     * @param responses a list with responses
      * @return the recalculated reward scores
      */
-    public SkillLevels recalculateLevels(final UUID chapterId, final UUID userId) {
+    public void recalculateLevels( final UUID userId,final List<ItemResponse>responses,final UUID courseId) {
         try {
-            log.info("Recalculating skill levels for chapter " + chapterId.toString());
+            log.info("Recalculating skill levels.");
+            skillLevelCalculator.recalculateLevels(userId, responses,courseId);
 
-            final AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
-
-            skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
-
-            final AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
-
-            return mapper.entityToDto(result);
         } catch (final Exception e) {
             throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
         }
@@ -128,13 +131,35 @@ public class SkillLevelService {
         return skillLevelEntity;
     }
 
+
     /**
-     * Deletes all skill levels for a given chapter.
+     * Deletes all skill levels for a given course. As well as all skill abilities for the associated skill abilities
      *
-     * @param chapterId The id of the chapter to delete the skill levels for
+     * @param courseId The id of the course to delete the skill levels for
      */
-    public void deleteSkillLevelsForChapter(final UUID chapterId) {
-        final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
+    public void deleteSkillLevelsForCourse(final UUID courseId){
+        final List<AllSkillLevelsEntity> entities=skillLevelsRepository.findByIdCourseId(courseId);
+        //get all SkillIds and delete the corresponding abilities
+        HashSet<UUID> skillIds=new HashSet<>();
+        HashSet<UUID> userIds=new HashSet<>();
+        for(AllSkillLevelsEntity entity:entities){
+            skillIds.add(entity.getId().getSkillId());
+            userIds.add(entity.getId().getUserId());
+        }
+        for(UUID skillId:skillIds){
+            for(UUID userId:userIds){
+                skillAbilityRepository.deleteById(new SkillAbilityEntity.PrimaryKey(skillId,userId));
+            }
+        }
         skillLevelsRepository.deleteAll(entities);
+    }
+
+    /**
+     * Deletes the item difficulty for the given item id
+     *
+     * @param itemId The id of the item whose difficulty should be deleted
+     */
+    public void deleteItemDifficulty(final UUID itemId){
+        itemDifficultyRepository.deleteById(itemId);
     }
 }

@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 @Profile("!test")
 public interface BloomLevelAbilityRepository extends JpaRepository<BloomLevelAbilityEntity, UUID> {
+    BloomLevelAbilityEntity findByUserIdAndBloomLevel(UUID userId,BloomLevel bloomLevel);
 }

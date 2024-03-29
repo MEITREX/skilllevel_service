@@ -35,12 +35,12 @@ public class SkillLevelLogEntry {
      * Difference between the old and the new value of the skill level.
      */
     @Column(nullable = false)
-    private float difference;
+    private double difference;
 
     /**
      * @return The old value of the skill level before the change.
      */
-    public float getOldValue() {
+    public double getOldValue() {
         return newValue - difference;
     }
 
@@ -48,7 +48,7 @@ public class SkillLevelLogEntry {
      * New value of the skill level after the change.
      */
     @Column(nullable = false)
-    private float newValue;
+    private double newValue;
 
     /**
      * Id of the items which caused this change in the skill level.
