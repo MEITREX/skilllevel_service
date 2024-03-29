@@ -51,8 +51,8 @@ public class SkillLevelLogEntry {
     private float newValue;
 
     /**
-     * Ids of the contents which caused this change in the skill level.
+     * Id of the items which caused this change in the skill level.
      */
-    @Column(columnDefinition = "UUID[]", nullable = false)
-    private List<UUID> associatedContentIds;
+    @Column( nullable = false)
+    private UUID associatedItemId;
 }

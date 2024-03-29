@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * Database entity which represents the skill levels (all types) of a user for a chapter.
+ * Database entity which represents the skill levels (all types) of a user for a skill.
  */
 @Entity(name = "SkillLevels")
 @Data
@@ -30,13 +30,19 @@ public class AllSkillLevelsEntity {
     private SkillLevelEntity apply;
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity analyze;
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
+    private SkillLevelEntity evaluate;
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
+    private SkillLevelEntity create;
 
+    @Column(nullable = false)
+    private UUID courseId;
     @Embeddable
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class PrimaryKey implements Serializable {
-        private UUID chapterId;
+        private UUID skillId;
         private UUID userId;
     }
 }
