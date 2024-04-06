@@ -18,18 +18,18 @@ jobs:
         uses: gradle/wrapper-validation-action@v2
       - name: Run chmod to make gradlew executable
         run: chmod +x gradlew
-
-      - name: Run tests
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Execute tests
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          arguments: cleanTest test
-# Configuration for SonarCloud, enable this when SonarCloud is configured
-#      - name: Execute tests
-#        env:
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#        uses: gradle/gradle-build-action@v3
-#        with:
-#          arguments: cleanTest test jacocoTestReport sonar
+          arguments: cleanTest test jacocoTestReport sonar
 
 
 
