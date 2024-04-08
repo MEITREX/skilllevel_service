@@ -38,7 +38,7 @@ sidecar.
 ## Dependencies to Other Services
 ### Events
 The events this service publishes/subscribes to are documented on the wiki:
-https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/dapr/dapr-topics.html
+https://meitrex.readthedocs.io/en/latest/dev-manuals/backend/dapr/dapr-topics.html
 
 ### GraphQL
 This service sends GraphQL queries to the content service to get information about the assessments and users' progress
@@ -55,5 +55,5 @@ The endpoint for the GraphQL API is `/graphql`. The GraphQL Playground is availa
 ## Get started
 
 A guide how to start development can be
-found in the [wiki](https://gits-enpro.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
+found in the [wiki](https://meitrex.readthedocs.io/en/latest/dev-manuals/backend/get-started.html).
 
