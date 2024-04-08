@@ -16,26 +16,25 @@ type Query {
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_userSkillLevelsByCourseId(courseId: [UUID!]!): [SkillLevelsNew!]!
+  _internal_noauth_userSkillLevelsByCourseId(courseId: UUID!): [SkillLevels!]!
   """
-  Get for the specific student the students' current compentencies for the given course, including for each compentency the covered Bloom Level .
+  Get for the specific user the user' current compentencies for the given course, including for each compentency the covered Bloom Level .
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_skillLevelsForUserByCourseIds(courseId: [UUID]!, userId: UUID!): [SkillLevelNew!]!
+  _internal_noauth_skillLevelsForUserByCourseIds(courseId: UUID!,userId:UUID!): [SkillLevels!]!
   """
-  Get for the specific student the students' current knowledge of the given compentency, including all covered Levels of Blooms Taxonomy .
+  Get for the current student the students' current knowledge of the given compentencies, including all covered Levels of Blooms Taxonomy .
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_skillLevelForUserBySkillId(skillId: UUID!, userId: UUID!): [SkillLevelNew!]!
-
-    """
-  Get for the current student the students' current knowledge of the given compentency, including all covered Levels of Blooms Taxonomy .
+  _internal_noauth_usersSkillLevelBySkillIds(skillIds: [UUID!]!): [SkillLevels!]!
+  """
+  Get for the specific student the students' current knowledge of the given compentencies, including all covered Levels of Blooms Taxonomy .
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
   any permissions check and should not be called without any validation of the caller's permissions. ⚠️
   """
-  _internal_noauth_usersskillLevelBySkillId(skillId: UUID!): [SkillLevelNew!]!
+  _internal_noauth_skillLevelForUserBySkillIds(skillIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
 
 }
 
@@ -79,7 +78,7 @@ type SkillLevels {
   """
   create represents how well a user can create new things based on the learned content
   """
-  evaluate:SkillLevel
+  create:SkillLevel
 }
 
 """
@@ -121,4 +120,13 @@ type SkillLevelLogItem {
   The ids of the contents that are associated with the change.
   """
   associatedItemId: UUID!
+
+  """
+  the response of the user to the item
+  """
+  userResponse:Float!
+  """
+  the probability of a correct response, that M-Elo predicts
+  """
+  predictedCorrectness:Float!
 }
