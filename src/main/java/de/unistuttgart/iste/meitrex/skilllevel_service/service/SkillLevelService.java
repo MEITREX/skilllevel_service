@@ -104,10 +104,6 @@ public class SkillLevelService {
                                                                       final UUID userId) {
         final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys = skillIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
         final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
-        if(entities.size()==skillIds.size()){
-            return entities;
-        }
-        else{
             List<AllSkillLevelsEntity> newSkillLevels = new ArrayList<>();
             for (UUID skillId : skillIds) {
                 boolean found = false;
@@ -132,7 +128,7 @@ public class SkillLevelService {
             }
             return newSkillLevels;
         }
-    }
+
 
 
 
