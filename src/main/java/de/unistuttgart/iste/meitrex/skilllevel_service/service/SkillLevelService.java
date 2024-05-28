@@ -4,6 +4,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAbilityEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillLevelEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillsForCourse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
@@ -103,7 +104,34 @@ public class SkillLevelService {
                                                                       final UUID userId) {
         final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys = skillIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
         final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
-        return entities;
+        if(entities.size()==skillIds.size()){
+            return entities;
+        }
+        else{
+            List<AllSkillLevelsEntity> newSkillLevels = new ArrayList<>();
+            for (UUID skillId : skillIds) {
+                boolean found = false;
+                for (AllSkillLevelsEntity entity : entities) {
+                    if (entity.getId().getSkillId().equals(skillId)) {
+                        found = true;
+                        newSkillLevels.add(entity);
+                        break;
+                    }
+                }
+                if (!found) {
+                    AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+                    newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(skillId,userId));
+                    newEntity.setRemember(initializeSkillLevelEntity(0));
+                    newEntity.setUnderstand(initializeSkillLevelEntity(0));
+                    newEntity.setApply(initializeSkillLevelEntity(0));
+                    newEntity.setAnalyze(initializeSkillLevelEntity(0));
+                    newEntity.setEvaluate(initializeSkillLevelEntity(0));
+                    newEntity.setCreate(initializeSkillLevelEntity(0));
+                    newSkillLevels.add(newEntity);
+                }
+            }
+            return newSkillLevels;
+        }
     }
 
 
@@ -140,5 +168,11 @@ public class SkillLevelService {
      */
     public void deleteItemDifficulty(final UUID itemId){
         itemDifficultyRepository.deleteById(itemId);
+    }
+    private SkillLevelEntity initializeSkillLevelEntity(final float initialValue) {
+        final SkillLevelEntity skillLevelEntity = new SkillLevelEntity(initialValue);
+        skillLevelEntity.setValue(initialValue);
+        skillLevelEntity.setLog(new ArrayList<>());
+        return skillLevelEntity;
     }
 }

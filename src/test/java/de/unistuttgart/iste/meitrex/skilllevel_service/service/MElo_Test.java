@@ -80,11 +80,9 @@ public class MElo_Test {
         float response =1;
         float prediction= (float) (1/(1+(Math.exp(-0))));
         float newItemDifficulty=  ((prediction-response));
-        System.out.println(response);
-        System.out.println(newItemDifficulty);
-        System.out.println(prediction);
+  
         float newSkillAbility= ((response-prediction));
-        System.out.println(itemDifficulty);
+ 
         assertThat(newItemDifficulty).isEqualTo(itemDifficulty.getDifficulty());
         assertThat(newSkillAbility).isEqualTo(skillAbility.getAbility());
 
@@ -649,10 +647,12 @@ public class MElo_Test {
         float skillAbility1Prediction= (float) (1/(1+Math.exp(-newSkillAbility3)));
         float skillAbility2Prediction=(float) (1/(1+Math.exp(-newSkillAbility2)));
         normFactor= (float) (Math.abs(prediction-response)/(Math.abs(response-(1/4F)*skillAbility2Prediction)+2*Math.abs(response-(1/4F)*skillAbility1Prediction)+Math.abs(response-(1/4F)*0.5)));
-        newSkillAbility= newSkillAbility+((1/(1+0.05F)*normFactor))*(response-prediction);
-        newSkillAbility2= newSkillAbility2+((1/(1+0.1F)*normFactor))*(response-prediction);
-        newSkillAbility3=newSkillAbility3+ ((1/(1+0.05F)*normFactor))*(response-prediction);
-        float newSkillAbility4=  (normFactor)*(response-prediction);
+        float newPredAbility1= (float) (1/(1+Math.exp(-newSkillAbility)));
+        float newPredAbility3=(float)(1/(1+Math.exp(-newSkillAbility3)));
+        newSkillAbility=  (newSkillAbility+((1/(1+0.05F)*normFactor))*(response-newPredAbility1));
+        newSkillAbility2= (float) (newSkillAbility2+((1/(1+0.1F)*normFactor))*(response-(1/(1+Math.exp(-newSkillAbility2)))));
+        newSkillAbility3= (float) (newSkillAbility3+ ((1/(1+0.05F)*normFactor))*(response-newPredAbility3));
+        float newSkillAbility4=  (normFactor)*(response-0.5f);
         assertThat(newItemDifficulty).isEqualTo(itemDifficulty.getDifficulty());
         assertThat(newItemDifficulty2).isEqualTo(itemDifficulty2.getDifficulty());
         assertThat(newItemDifficulty3).isEqualTo(itemDifficulty3.getDifficulty());

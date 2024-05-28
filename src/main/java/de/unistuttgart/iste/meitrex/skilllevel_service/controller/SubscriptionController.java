@@ -27,7 +27,7 @@ public class SubscriptionController {
      * Dapr topic subscription to recalculate the skill levels of a user for a specific chapter when the user
      * completes an assessment in that chapter.
      */
-    @Topic(name = "user-progress-updated", pubsubName = "gits")
+    @Topic(name = "user-progress-updated", pubsubName = "meitrex")
     @PostMapping(path = "/skilllevel-service/user-progress-pubsub")
     public Mono<Void> onUserProgress(@RequestBody final CloudEvent<UserProgressUpdatedEvent> cloudEvent) {
         log.info("Received event: {}", cloudEvent.getData());
@@ -47,7 +47,7 @@ public class SubscriptionController {
      * Dapr topic subscription to delete the stored skill level data of users for a specific course when the course
      * is deleted.
      */
-    @Topic(name = "course-changed", pubsubName = "gits")
+    @Topic(name = "course-changed", pubsubName = "meitrex")
     @PostMapping(path = "/skilllevel-service/course-changes-pubsub")
     public Mono<Void> onCourseChanged(@RequestBody final CloudEvent<CourseChangeEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
@@ -65,7 +65,7 @@ public class SubscriptionController {
     /**
      * Dapr topic subscription to delete the stored item data of users when the corresponding item was deleted
      */
-    @Topic(name="item-changed",pubsubName = "gits")
+    @Topic(name="item-changed",pubsubName = "meitrex")
     @PostMapping(path="/skilllevel-service/item-changed-pubsub")
     public Mono<Void> onItemChanged(@RequestBody final CloudEvent<ItemChangeEvent> cloudEvent){
         return Mono.fromRunnable(() -> {

@@ -105,11 +105,11 @@ public class SkillLevelCalculator {
         float alpha =calculateAlpha(prediction,correctResponse,difficulty,abilities);
         updateDifficulty(response.getItemId(),prediction,correctResponse);
         for(UUID skillId: response.getSkillIds()) {
-            updateSkillAbility(userId, skillId, prediction,correctResponse,alpha);
+            updateSkillAbility(userId, skillId, difficulty,correctResponse,alpha);
         }
         for(LevelOfBloomsTaxonomy levelOfBloomsTaxonomy:response.getLevelsOfBloomsTaxonomy()){
             BloomLevel level = mapLevelOfBloomsTaxonomyToBloomLevel(levelOfBloomsTaxonomy);
-            updateBloomLevelAbilities(userId,level,prediction,correctResponse,alpha);
+            updateBloomLevelAbilities(userId,level,difficulty,correctResponse,alpha);
         }
         updateSkillLevels(response,userId,prediction);
     }
@@ -305,14 +305,16 @@ public class SkillLevelCalculator {
      * update the users' ability on the given skill based on the users latest response to an item requiring this skill
      * @param userId the id of the user
      * @param skillId the id of the given skill
-     * @param prediction the probability, that the student will answer the latest item correctly
+     * @param difficulty the difficulty of the item answered item
      * @param response the users response
      */
-    private void updateSkillAbility(UUID userId,UUID skillId,float prediction, float response,float alpha){
+    private void updateSkillAbility(UUID userId,UUID skillId,float difficulty, float response,float alpha){
         SkillAbilityEntity skill = skillAbilityRepository.findById(new SkillAbilityEntity.PrimaryKey(skillId,userId)).get();
         float oldValue= skill.getAbility();
+        float prediction=predictOneParameter(difficulty,oldValue);
         float newValue=oldValue+alpha*uncertaintyFunction(skill.getNumberOfPreviousAttempts())*(response-prediction);
         skill.setAbility(newValue);
+        System.out.println(newValue);
         skill.setNumberOfPreviousAttempts(skill.getNumberOfPreviousAttempts()+1);
         skillAbilityRepository.save(skill);
     }
@@ -322,12 +324,13 @@ public class SkillLevelCalculator {
      * based on the users latest response to an item requiring this bloom level
      * @param userId the id of the user
      * @param bloomLevel level of blooms taxonomy
-     * @param prediction the probability, that the student will answer the latest item correctly
+     * @param difficulty the difficulty of the item answered item
      * @param response the users response
      */
-    private void updateBloomLevelAbilities(UUID userId,BloomLevel bloomLevel,float prediction, float response, float alpha){
+    private void updateBloomLevelAbilities(UUID userId,BloomLevel bloomLevel,float difficulty, float response, float alpha){
         BloomLevelAbilityEntity bloomLevelAbility = bloomLevelAbilityRepository.findByUserIdAndBloomLevel(userId,bloomLevel);
         float oldValue=bloomLevelAbility.getAbility();
+        float prediction=predictOneParameter(difficulty,oldValue);
         float newValue=oldValue+alpha*uncertaintyFunction(bloomLevelAbility.getNumberOfPreviousAttempts())*(response-prediction);
         bloomLevelAbility.setNumberOfPreviousAttempts(bloomLevelAbility.getNumberOfPreviousAttempts()+1);
         bloomLevelAbility.setAbility(newValue);

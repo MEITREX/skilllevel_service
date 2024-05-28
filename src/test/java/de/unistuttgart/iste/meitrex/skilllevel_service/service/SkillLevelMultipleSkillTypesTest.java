@@ -88,8 +88,10 @@ class SkillLevelMultipleSkillTypesTest {
         float prediction2=(float) (1/(1+Math.exp(-newSkillAbility*0.5)));
         float newItemDifficulty2= (float) ((1)*(prediction2-responseSecond));
         normFactor= (float) (Math.abs(prediction2-responseSecond)/(Math.abs(responseSecond-(0.5*skillLevelRemember)+Math.abs(responseSecond-(0.5*0.5)))));
-        float newSkillAbility2= (float) ( newSkillAbility+ (normFactor*((1/(1+0.05))*(responseSecond-prediction2))));
-        float bloomAbility=(normFactor*(responseSecond-prediction2));
+        float predictionSkill= (float) (1/(1+Math.exp(-(newSkillAbility))));
+        System.out.println("test"+normFactor);
+        float newSkillAbility2= (float) ( newSkillAbility+ (normFactor*((1/(1+0.05))*(responseSecond-predictionSkill))));
+        float bloomAbility=(normFactor*(responseSecond-0.5f));
         float skillLevelUnderstand= (float) (1/(1+Math.exp(-(newSkillAbility2*0.5f+0.5f*bloomAbility))));
         assertThat(skillLevels.getRemember().getValue()).isEqualTo(skillLevelRemember);
         assertThat(skillLevels.getUnderstand().getValue()).isEqualTo(skillLevelUnderstand);
