@@ -42,7 +42,7 @@ public class SkillLevelService {
      * @param responses a list with responses
      * @return the recalculated reward scores
      */
-    public void recalculateLevels( final UUID userId,final List<ItemResponse>responses) {
+    public void recalculateLevels(final UUID userId, final List<ItemResponse> responses) {
         try {
             log.info("Recalculating skill levels.");
             skillLevelCalculator.recalculateLevels(userId, responses);
@@ -54,22 +54,24 @@ public class SkillLevelService {
 
     /**
      * return the skill levels, that belong to the given user and course
+     *
      * @param courseId the id of the course
-     * @param userId the id of the user
+     * @param userId   the id of the user
      * @return skill levels of the user for the given course
      */
-    public List<SkillLevels> getSkillLevelsForCourse(UUID courseId,UUID userId){
+    public List<SkillLevels> getSkillLevelsForCourse(UUID courseId, UUID userId) {
         return getSkillLevelEntitiesForCourse(courseId, userId).stream().map(mapper::entityToDto).toList();
 
     }
 
     /**
      * return the skill levels of the given user and the given skills
+     *
      * @param skillIds the ids of the skills
-     * @param userId the id of the user
+     * @param userId   the id of the user
      * @return the skill levels for the given user and skills
      */
-    public List<SkillLevels> getSkillLevelsForSkillIds(List<UUID> skillIds,UUID userId){
+    public List<SkillLevels> getSkillLevelsForSkillIds(List<UUID> skillIds, UUID userId) {
         return getSkillLevelEntitiesForSkillIds(skillIds, userId).stream().map(mapper::entityToDto).toList();
 
     }
@@ -78,17 +80,17 @@ public class SkillLevelService {
      * Returns the skill levels for a given user and a course.
      *
      * @param courseId The ids of the course to get the skill levels for
-     * @param userId     The id of the user to get the skill levels for
+     * @param userId   The id of the user to get the skill levels for
      * @return A list containing the skill levels for the given course
      */
     private List<AllSkillLevelsEntity> getSkillLevelEntitiesForCourse(final UUID courseId,
-                                                                                    final UUID userId) {
-        List< SkillsForCourse> skills=skillsForCourseRepository.findByCourseId(courseId);
-        List<UUID>skillIds=new ArrayList<>();
-        for(SkillsForCourse skillsForCourse:skills){
+                                                                      final UUID userId) {
+        List<SkillsForCourse> skills = skillsForCourseRepository.findByCourseId(courseId);
+        List<UUID> skillIds = new ArrayList<>();
+        for (SkillsForCourse skillsForCourse : skills) {
             skillIds.add(skillsForCourse.getSkillId());
         }
-        return getSkillLevelEntitiesForSkillIds(skillIds,userId);
+        return getSkillLevelEntitiesForSkillIds(skillIds, userId);
 
     }
 
@@ -97,41 +99,37 @@ public class SkillLevelService {
      * Returns the skill levels for a given user and skills.
      *
      * @param skillIds The ids of the skills to get the skill levels for
-     * @param userId     The id of the user to get the skill levels for
+     * @param userId   The id of the user to get the skill levels for
      * @return A list containing the skill levels for the given course
      */
-    private List<AllSkillLevelsEntity> getSkillLevelEntitiesForSkillIds(final List<UUID>skillIds,
-                                                                      final UUID userId) {
+    private List<AllSkillLevelsEntity> getSkillLevelEntitiesForSkillIds(final List<UUID> skillIds,
+                                                                        final UUID userId) {
         final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys = skillIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
         final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
-            List<AllSkillLevelsEntity> newSkillLevels = new ArrayList<>();
-            for (UUID skillId : skillIds) {
-                boolean found = false;
-                for (AllSkillLevelsEntity entity : entities) {
-                    if (entity.getId().getSkillId().equals(skillId)) {
-                        found = true;
-                        newSkillLevels.add(entity);
-                        break;
-                    }
-                }
-                if (!found) {
-                    AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
-                    newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(skillId,userId));
-                    newEntity.setRemember(initializeSkillLevelEntity(0));
-                    newEntity.setUnderstand(initializeSkillLevelEntity(0));
-                    newEntity.setApply(initializeSkillLevelEntity(0));
-                    newEntity.setAnalyze(initializeSkillLevelEntity(0));
-                    newEntity.setEvaluate(initializeSkillLevelEntity(0));
-                    newEntity.setCreate(initializeSkillLevelEntity(0));
-                    newSkillLevels.add(newEntity);
+        List<AllSkillLevelsEntity> newSkillLevels = new ArrayList<>();
+        for (UUID skillId : skillIds) {
+            boolean found = false;
+            for (AllSkillLevelsEntity entity : entities) {
+                if (entity.getId().getSkillId().equals(skillId)) {
+                    found = true;
+                    newSkillLevels.add(entity);
+                    break;
                 }
             }
-            return newSkillLevels;
+            if (!found) {
+                AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+                newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(skillId, userId));
+                newEntity.setRemember(initializeSkillLevelEntity(0));
+                newEntity.setUnderstand(initializeSkillLevelEntity(0));
+                newEntity.setApply(initializeSkillLevelEntity(0));
+                newEntity.setAnalyze(initializeSkillLevelEntity(0));
+                newEntity.setEvaluate(initializeSkillLevelEntity(0));
+                newEntity.setCreate(initializeSkillLevelEntity(0));
+                newSkillLevels.add(newEntity);
+            }
         }
-
-
-
-
+        return newSkillLevels;
+    }
 
 
     /**
@@ -139,20 +137,20 @@ public class SkillLevelService {
      *
      * @param courseId The id of the course to delete the skill levels for
      */
-    public void deleteSkillLevelsForCourse(final UUID courseId){
-        final List<SkillsForCourse> skills=skillsForCourseRepository.findByCourseId(courseId);
+    public void deleteSkillLevelsForCourse(final UUID courseId) {
+        final List<SkillsForCourse> skills = skillsForCourseRepository.findByCourseId(courseId);
 
         //get all SkillIds and delete the corresponding abilities
-        HashSet<UUID> skillIds=new HashSet<>();
-        HashSet<UUID> userIds=new HashSet<>();
-        for(SkillsForCourse skill:skills){
+        HashSet<UUID> skillIds = new HashSet<>();
+        HashSet<UUID> userIds = new HashSet<>();
+        for (SkillsForCourse skill : skills) {
             skillIds.add(skill.getSkillId());
         }
-        for(UUID skillId:skillIds){
-            List<AllSkillLevelsEntity>abilitiesForSkillId=skillLevelsRepository.findByIdSkillId(skillId);
-            for(AllSkillLevelsEntity ability:abilitiesForSkillId){
-                skillAbilityRepository.deleteById(new SkillAbilityEntity.PrimaryKey(skillId,ability.getId().getUserId()));
-                skillLevelsRepository.deleteById(new AllSkillLevelsEntity.PrimaryKey(skillId,ability.getId().getUserId()));
+        for (UUID skillId : skillIds) {
+            List<AllSkillLevelsEntity> abilitiesForSkillId = skillLevelsRepository.findByIdSkillId(skillId);
+            for (AllSkillLevelsEntity ability : abilitiesForSkillId) {
+                skillAbilityRepository.deleteById(new SkillAbilityEntity.PrimaryKey(skillId, ability.getId().getUserId()));
+                skillLevelsRepository.deleteById(new AllSkillLevelsEntity.PrimaryKey(skillId, ability.getId().getUserId()));
             }
         }
     }
@@ -162,9 +160,10 @@ public class SkillLevelService {
      *
      * @param itemId The id of the item whose difficulty should be deleted
      */
-    public void deleteItemDifficulty(final UUID itemId){
+    public void deleteItemDifficulty(final UUID itemId) {
         itemDifficultyRepository.deleteById(itemId);
     }
+
     private SkillLevelEntity initializeSkillLevelEntity(final float initialValue) {
         final SkillLevelEntity skillLevelEntity = new SkillLevelEntity(initialValue);
         skillLevelEntity.setValue(initialValue);

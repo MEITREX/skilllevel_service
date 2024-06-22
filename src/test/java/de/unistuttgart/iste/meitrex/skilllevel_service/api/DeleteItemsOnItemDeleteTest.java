@@ -20,7 +20,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels","item_difficulty","bloom_level_ability","skill_ability"})
+@TablesToDelete({"skill_level_log", "skill_level_log_entry", "skill_levels", "item_difficulty", "bloom_level_ability", "skill_ability"})
 @GraphQlApiTest
 public class DeleteItemsOnItemDeleteTest {
     @Autowired
@@ -31,6 +31,7 @@ public class DeleteItemsOnItemDeleteTest {
     private SkillLevelService skillLevelService;
     @Autowired
     private SubscriptionController subscriptionController;
+
     @Test
     @Transactional
     @Commit
@@ -38,7 +39,7 @@ public class DeleteItemsOnItemDeleteTest {
         // firstly, initialize the skill levels for some chapter
         final UUID userId = UUID.randomUUID();
         final UUID itemId = UUID.randomUUID();
-        ItemDifficultyEntity entity=new ItemDifficultyEntity();
+        ItemDifficultyEntity entity = new ItemDifficultyEntity();
         entity.setItemId(itemId);
         entity.setDifficulty(0.45f);
         entity.setNumberOfPreviousAttempts(5);
@@ -62,7 +63,7 @@ public class DeleteItemsOnItemDeleteTest {
         // firstly, initialize the skill levels for some chapter
         final UUID userId = UUID.randomUUID();
         final UUID itemId = UUID.randomUUID();
-        ItemDifficultyEntity entity=new ItemDifficultyEntity();
+        ItemDifficultyEntity entity = new ItemDifficultyEntity();
         entity.setItemId(itemId);
         entity.setDifficulty(0.45f);
         entity.setNumberOfPreviousAttempts(5);

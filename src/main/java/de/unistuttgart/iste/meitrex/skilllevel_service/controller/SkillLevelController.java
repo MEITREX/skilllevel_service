@@ -25,7 +25,7 @@ public class SkillLevelController {
     public static final String INTERNAL_NOAUTH_PREFIX = "_internal_noauth_";
 
     @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByCourseId")
-    public List<SkillLevels> userSkillLevelsByCourseId(@Argument final UUID courseId,@ContextValue final LoggedInUser currentUser) {
+    public List<SkillLevels> userSkillLevelsByCourseId(@Argument final UUID courseId, @ContextValue final LoggedInUser currentUser) {
         return skilllevelService.getSkillLevelsForCourse(courseId, currentUser.getId());
     }
 

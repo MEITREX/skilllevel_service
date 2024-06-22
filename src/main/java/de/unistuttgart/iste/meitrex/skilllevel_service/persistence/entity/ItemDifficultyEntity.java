@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.util.UUID;
+
 /**
  * Database entity which represents the difficulty of an item, as well as the number of attempts on this item.
  */

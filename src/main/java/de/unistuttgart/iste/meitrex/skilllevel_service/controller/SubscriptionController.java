@@ -34,7 +34,7 @@ public class SubscriptionController {
 
         return Mono.fromRunnable(() -> {
             try {
-                skillLevelService.recalculateLevels( cloudEvent.getData().getUserId(),cloudEvent.getData().getResponses());
+                skillLevelService.recalculateLevels(cloudEvent.getData().getUserId(), cloudEvent.getData().getResponses());
             } catch (Exception e) {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
@@ -62,12 +62,13 @@ public class SubscriptionController {
             }
         });
     }
+
     /**
      * Dapr topic subscription to delete the stored item data of users when the corresponding item was deleted
      */
-    @Topic(name="item-changed",pubsubName = "meitrex")
-    @PostMapping(path="/skilllevel-service/item-changed-pubsub")
-    public Mono<Void> onItemChanged(@RequestBody final CloudEvent<ItemChangeEvent> cloudEvent){
+    @Topic(name = "item-changed", pubsubName = "meitrex")
+    @PostMapping(path = "/skilllevel-service/item-changed-pubsub")
+    public Mono<Void> onItemChanged(@RequestBody final CloudEvent<ItemChangeEvent> cloudEvent) {
         return Mono.fromRunnable(() -> {
             try {
                 if (cloudEvent.getData().getOperation() != CrudOperation.DELETE)

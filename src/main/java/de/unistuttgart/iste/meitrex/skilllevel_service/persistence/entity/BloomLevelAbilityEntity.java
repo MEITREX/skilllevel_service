@@ -12,19 +12,19 @@ import java.util.UUID;
  * Database entity which represents the ability of a user of a level of Blooms Taxonomy.
  */
 
-@Entity(name="BloomLevelAbility")
+@Entity(name = "BloomLevelAbility")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BloomLevelAbilityEntity {
 
-    public BloomLevelAbilityEntity(UUID userId, BloomLevel bloomLevel, float ability, int numberOfPreviousAttempts){
-        this.userId=userId;
-        this.bloomLevel=bloomLevel;
-        this.ability=ability;
-        this.numberOfPreviousAttempts=numberOfPreviousAttempts;
-        this.id=UUID.randomUUID();
+    public BloomLevelAbilityEntity(UUID userId, BloomLevel bloomLevel, float ability, int numberOfPreviousAttempts) {
+        this.userId = userId;
+        this.bloomLevel = bloomLevel;
+        this.ability = ability;
+        this.numberOfPreviousAttempts = numberOfPreviousAttempts;
+        this.id = UUID.randomUUID();
     }
 
     @Generated
@@ -42,8 +42,6 @@ public class BloomLevelAbilityEntity {
 
     @Column(nullable = false)
     private int numberOfPreviousAttempts;
-
-
 
 
 }

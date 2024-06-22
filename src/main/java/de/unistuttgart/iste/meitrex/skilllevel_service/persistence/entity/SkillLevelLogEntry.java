@@ -53,7 +53,7 @@ public class SkillLevelLogEntry {
     /**
      * Id of the items which caused this change in the skill level.
      */
-    @Column( nullable = false)
+    @Column(nullable = false)
     private UUID associatedItemId;
     /**
      * Response of the user to the given item
@@ -61,7 +61,7 @@ public class SkillLevelLogEntry {
     @Column(nullable = false)
     private float userResponse;
     /**
-     *the probability of a correct response, predicted by M-Elo
+     * the probability of a correct response, predicted by M-Elo
      */
     @Column(nullable = false)
     private float predictedCorrectness;

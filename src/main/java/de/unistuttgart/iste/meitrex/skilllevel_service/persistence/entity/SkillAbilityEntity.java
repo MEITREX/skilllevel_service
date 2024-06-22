@@ -16,7 +16,7 @@ import java.util.UUID;
  * Database entity which represents the ability of a user of a skill.
  */
 
-@Entity(name="SkillAbility")
+@Entity(name = "SkillAbility")
 @Data
 @Builder
 @NoArgsConstructor

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Profile("!test")
-public interface SkillAbilityRepository extends JpaRepository<SkillAbilityEntity,SkillAbilityEntity.PrimaryKey> {
+public interface SkillAbilityRepository extends JpaRepository<SkillAbilityEntity, SkillAbilityEntity.PrimaryKey> {
 }

@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface SkillsForCourseRepository extends JpaRepository<SkillsForCourse, UUID> {
-    List<SkillsForCourse>  findByCourseId(UUID courseId);
+    List<SkillsForCourse> findByCourseId(UUID courseId);
 }
