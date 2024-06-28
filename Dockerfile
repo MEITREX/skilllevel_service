@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM gradle:7.6.2-jdk17 AS build
+FROM gradle:8-jdk21 AS build
 WORKDIR /workspace/app
 
 # Copy only gradle files to container so we can install them
