@@ -3,7 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.+'
 	id 'io.spring.dependency-management' version '1.+'
 	id "io.github.kobylynskyi.graphql.codegen" version "5.+"
-	id "org.sonarqube" version "4.+"
+	id "org.sonarqube" version "5.+"
 	id "jacoco"
 	
 }
@@ -54,7 +54,7 @@ graphqlCodegen {
 	// all config options:
 	// https://github.com/kobylynskyi/graphql-java-codegen/blob/main/docs/codegen-options.md
 	outputDir = new File("$buildDir/generated")
-	packageName = "de.unistuttgart.iste.gits.generated.dto"
+	packageName = "de.unistuttgart.iste.meitrex.generated.dto"
 	generatedAnnotation = "jakarta.annotation.Generated"
 	modelValidationAnnotation = "jakarta.validation.constraints.NotNull"
 	generateApis = false // set to false as the generator does not support spring boot graphQL
@@ -98,7 +98,7 @@ repositories {
 }
 
 dependencies {
-	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.0.0'
+	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.0.6'
 	implementation 'de.unistuttgart.iste.meitrex:content_service:1.0.6'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
@@ -106,8 +106,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.modelmapper:modelmapper:3.+'
-	implementation 'com.graphql-java:graphql-java-extended-scalars:20.0'
-	implementation 'com.graphql-java:graphql-java-extended-validation:20.0'
+	implementation 'com.graphql-java:graphql-java-extended-scalars:22.0'
+	implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'io.dapr:dapr-sdk:1.9.0' // Dapr's core SDK with all features, except Actors.
 	implementation 'io.dapr:dapr-sdk-springboot:1.9.0' // Dapr's SDK integration with SpringBoot
@@ -116,11 +116,11 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'de.unistuttgart.iste.meitrex:meitrex-common-test:1.0.0'
+	testImplementation 'de.unistuttgart.iste.meitrex:meitrex-common-test:1.0.6'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework:spring-webflux'
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
-	testImplementation "org.mockito:mockito-core:3.+"
+	testImplementation "org.mockito:mockito-core:5.+"
 	testImplementation 'org.hamcrest:hamcrest:2.+'
 	testImplementation "org.testcontainers:postgresql:1.+"
 	testImplementation "org.testcontainers:junit-jupiter:1.+"
