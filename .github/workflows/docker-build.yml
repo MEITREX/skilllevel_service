@@ -1,11 +1,13 @@
 name: Building Docker Image
 
 on:
-  workflow_run:
-    workflows:
-      - Testing CI pipeline
-    types:
-      - completed
+  workflow_dispatch:
+#  enable when deployment is ready
+#  workflow_run:
+#    workflows:
+#      - Testing CI pipeline
+#    types:
+#      - completed
 
 jobs:
   docker-build:
