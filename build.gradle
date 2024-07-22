@@ -3,9 +3,8 @@ plugins {
 	id 'org.springframework.boot' version '3.2.+'
 	id 'io.spring.dependency-management' version '1.+'
 	id "io.github.kobylynskyi.graphql.codegen" version "5.+"
-	id "org.sonarqube" version "4.+"
+	id "org.sonarqube" version "5.+"
 	id "jacoco"
-	
 }
 
 group = 'de.unistuttgart.iste.meitrex'
@@ -26,7 +25,27 @@ sonarqube {
     property("sonar.organization", "meitrex")
     property("sonar.host.url", "https://sonarcloud.io")
   }
+}
 
+// workaround to fetch schema files from external repositories
+// as gradle only supports java dependencies
+def fetchFilesFromRepo(String repository, List<String> files) {
+	def baseurl = "https://raw.githubusercontent.com/MEITREX/"
+	def fileUrl = "${baseurl}${repository}/main/src/main/resources/graphql/"
+	def outputDir = "src/main/resources/graphql"
+
+	files.each { file ->
+		tasks.register("fetchExternalSchema-${file.capitalize()}", Exec) {
+			commandLine 'curl', "${fileUrl}${file}", '-o', "${outputDir}/${repository}/${file}"
+		}
+	}
+}
+
+fetchFilesFromRepo("common", ["directives.graphqls", "scalars.graphqls", "sortFilterPagination.graphqls"])
+
+// run this task to fetch the latest schema files from the external github repositories
+tasks.register("fetchAllExternalSchemas", Task) {
+	dependsOn tasks.matching { it.name.startsWith("fetchExternalSchema-") }
 }
 
 // Automatically generate DTOs from GraphQL schema:
@@ -48,6 +67,7 @@ graphqlCodegen {
 	]
 	generateEqualsAndHashCode = true
 	generateToString = true
+	fieldsWithResolvers = ["@OnDemand"]
 }
 
 // Automatically generate GraphQL code on project build:
@@ -55,6 +75,25 @@ compileJava.dependsOn 'graphqlCodegen'
 
 // Add generated sources to your project source sets:
 sourceSets.main.java.srcDir "$buildDir/generated"
+
+// Automatically generate API documentation on project build:
+// Remark: Only works on Windows
+tasks.register('generateApiDocs') {
+	doLast {
+		try {
+			exec {
+				commandLine 'cmd', '/c', 'generate_api_doc.bat'
+			}
+		} catch (Exception e) {
+			// Catch errors when running api documentation generation.
+			// Errors during doc generation shouldn't cause the whole build to fail
+			println "Failed to generate API documentation: ${e.message}"
+		}
+	}
+}
+tasks.named('assemble') {
+	finalizedBy('generateApiDocs')
+}
 
 configurations {
 	compileOnly {
@@ -67,16 +106,18 @@ repositories {
 }
 
 dependencies {
+
 	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.2'
+	implementation 'de.unistuttgart.iste.meitrex:content_service:1.0.6'
+
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.google.code.findbugs:jsr305:3.0.2' // removes a gradle warning about an unknown annotation
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.modelmapper:modelmapper:3.+'
-	implementation 'com.graphql-java:graphql-java-extended-scalars:20.0'
-	implementation 'com.graphql-java:graphql-java-extended-validation:20.0'
+	implementation 'com.graphql-java:graphql-java-extended-scalars:22.0'
+	implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'io.dapr:dapr-sdk:1.+' // Dapr's core SDK with all features, except Actors.
 	implementation 'io.dapr:dapr-sdk-springboot:1.+' // Dapr's SDK integration with SpringBoot
@@ -89,7 +130,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework:spring-webflux'
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
-	testImplementation "org.mockito:mockito-core:3.+"
+	testImplementation "org.mockito:mockito-core:5.+"
 	testImplementation 'org.hamcrest:hamcrest:2.+'
 	testImplementation "org.testcontainers:postgresql:1.+"
 	testImplementation "org.testcontainers:junit-jupiter:1.+"
@@ -98,5 +139,3 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
-tasks.withType(Test).configureEach { testLogging.showStandardStreams = true }
