@@ -24,6 +24,7 @@ public class SkillLevelController {
     private final SkillLevelService skilllevelService;
     public static final String INTERNAL_NOAUTH_PREFIX = "_internal_noauth_";
 
+<<<<<<< HEAD
     @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByCourseId")
     public List<SkillLevels> userSkillLevelsByCourseId(@Argument final UUID courseId, @ContextValue final LoggedInUser currentUser) {
         return skilllevelService.getSkillLevelsForCourse(courseId, currentUser.getId());
@@ -45,4 +46,21 @@ public class SkillLevelController {
     }
 
 
+=======
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByChapterIds")
+    public List<SkillLevels> userSkillLevelsByChapterIds(@Argument final List<UUID> chapterIds, @ContextValue final LoggedInUser currentUser) {
+        return skilllevelService.getSkillLevelsForChapters(chapterIds, currentUser.getId());
+    }
+
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillLevelsForUserByChapterIds")
+    public List<SkillLevels> skillLevelsForUserByChapterIds(@Argument final List<UUID> chapterIds, @Argument final UUID userId) {
+        return skilllevelService.getSkillLevelsForChapters(chapterIds, userId);
+    }
+
+    @MutationMapping
+    public SkillLevels recalculateLevels(@Argument final UUID chapterId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
+        GlobalPermissionAccessValidator.validateUserHasGlobalPermission(currentUser, Set.of(LoggedInUser.RealmRole.SUPER_USER));
+        return skilllevelService.recalculateLevels(chapterId, userId);
+    }
+>>>>>>> main
 }
