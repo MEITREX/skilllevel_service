@@ -24,19 +24,25 @@ public class SkillLevelController {
     private final SkillLevelService skilllevelService;
     public static final String INTERNAL_NOAUTH_PREFIX = "_internal_noauth_";
 
-    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByChapterIds")
-    public List<SkillLevels> userSkillLevelsByChapterIds(@Argument final List<UUID> chapterIds, @ContextValue final LoggedInUser currentUser) {
-        return skilllevelService.getSkillLevelsForChapters(chapterIds, currentUser.getId());
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "userSkillLevelsByCourseId")
+    public List<SkillLevels> userSkillLevelsByCourseId(@Argument final UUID courseId, @ContextValue final LoggedInUser currentUser) {
+        return skilllevelService.getSkillLevelsForCourse(courseId, currentUser.getId());
     }
 
-    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillLevelsForUserByChapterIds")
-    public List<SkillLevels> skillLevelsForUserByChapterIds(@Argument final List<UUID> chapterIds, @Argument final UUID userId) {
-        return skilllevelService.getSkillLevelsForChapters(chapterIds, userId);
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillLevelsForUserByCourseIds")
+    public List<SkillLevels> skillLevelsForUserByCourseId(@Argument final UUID courseId, @Argument final UUID userId) {
+        return skilllevelService.getSkillLevelsForCourse(courseId, userId);
     }
 
-    @MutationMapping
-    public SkillLevels recalculateLevels(@Argument final UUID chapterId, @Argument final UUID userId, @ContextValue final LoggedInUser currentUser) {
-        GlobalPermissionAccessValidator.validateUserHasGlobalPermission(currentUser, Set.of(LoggedInUser.RealmRole.SUPER_USER));
-        return skilllevelService.recalculateLevels(chapterId, userId);
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "usersSkillLevelBySkillIds")
+    public List<SkillLevels> usersSkillLevelBySkillIds(@Argument final List<UUID> skillIds, @ContextValue final LoggedInUser currentUser) {
+        return skilllevelService.getSkillLevelsForSkillIds(skillIds, currentUser.getId());
     }
+
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillLevelForUserBySkillIds")
+    public List<SkillLevels> skillLevelForUserBySkillIds(@Argument final List<UUID> skillIds, @Argument final UUID userId) {
+        return skilllevelService.getSkillLevelsForSkillIds(skillIds, userId);
+    }
+
+
 }

@@ -30,7 +30,7 @@ public class SkillLevelEntity {
     private UUID id;
 
     /**
-     * Current value of the skill level. Can range from 0 to 10.
+     * Current value of the skill level. Can range from 0 to 1.
      */
     @Column(nullable = false)
     private float value;

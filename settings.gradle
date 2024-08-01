@@ -9,5 +9,6 @@ sourceControl {
     }
     gitRepository(uri('https://github.com/MEITREX/content_service')) {
         producesModule('de.unistuttgart.iste.meitrex:content_service')
+
     }
 }

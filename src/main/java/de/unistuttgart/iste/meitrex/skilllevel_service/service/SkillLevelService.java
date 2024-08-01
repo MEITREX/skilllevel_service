@@ -1,13 +1,17 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service;
 
 import de.unistuttgart.iste.meitrex.generated.dto.*;
+import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAbilityEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillLevelEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillsForCourse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.ItemDifficultyRepository;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.SkillAbilityRepository;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.SkillsForCourseRepository;
 import de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation.*;
-import de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation.SkillLevelCalculationException;
-import de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation.SkillLevelCalculator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,118 +29,145 @@ public class SkillLevelService {
     private final SkillLevelMapper mapper;
     private final SkillLevelCalculator skillLevelCalculator;
 
+    private final SkillAbilityRepository skillAbilityRepository;
+
+    private final ItemDifficultyRepository itemDifficultyRepository;
+
+    private final SkillsForCourseRepository skillsForCourseRepository;
+
     /**
-     * Recalculates the skill levels for a given user, course, and chapter.
+     * Recalculates the skill levels for a given user and responses.
      *
-     * @param chapterId the id of the chapter
      * @param userId    the id of the user
+     * @param responses a list with responses
      * @return the recalculated reward scores
      */
-    public SkillLevels recalculateLevels(final UUID chapterId, final UUID userId) {
+    public void recalculateLevels(final UUID userId, final List<ItemResponse> responses) {
         try {
-            log.info("Recalculating skill levels for chapter " + chapterId.toString());
+            log.info("Recalculating skill levels.");
+            skillLevelCalculator.recalculateLevels(userId, responses);
 
-            final AllSkillLevelsEntity entity = getOrInitializeSkillLevelEntitiesForChapters(List.of(chapterId), userId).get(0);
-
-            skillLevelCalculator.recalculateLevels(chapterId, userId, entity);
-
-            final AllSkillLevelsEntity result = skillLevelsRepository.save(entity);
-
-            return mapper.entityToDto(result);
         } catch (final Exception e) {
             throw new SkillLevelCalculationException("Could not recalculate skill levels", e);
         }
     }
 
     /**
-     * Returns the skill levels for a given user and a list of chapters.
+     * return the skill levels, that belong to the given user and course
      *
-     * @param chapterIds The ids of the chapters to get the skill levels for
-     * @param userId     The id of the user to get the skill levels for
-     * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
+     * @param courseId the id of the course
+     * @param userId   the id of the user
+     * @return skill levels of the user for the given course
      */
-    public List<SkillLevels> getSkillLevelsForChapters(final List<UUID> chapterIds, final UUID userId) {
-        return getOrInitializeSkillLevelEntitiesForChapters(chapterIds, userId).stream().map(mapper::entityToDto).toList();
+    public List<SkillLevels> getSkillLevelsForCourse(UUID courseId, UUID userId) {
+        return getSkillLevelEntitiesForCourse(courseId, userId).stream().map(mapper::entityToDto).toList();
+
     }
 
     /**
-     * Returns the skill levels for a given user and a list of chapters. If the skill levels for a chapter don't exist
-     * yet, they will be initialized in the database with a value of 0.
+     * return the skill levels of the given user and the given skills
      *
-     * @param chapterIds The ids of the chapters to get the skill levels for
-     * @param userId     The id of the user to get the skill levels for
-     * @return A list containing the skill levels for the given chapters in the same order as the chapterIds list
+     * @param skillIds the ids of the skills
+     * @param userId   the id of the user
+     * @return the skill levels for the given user and skills
      */
-    private List<AllSkillLevelsEntity> getOrInitializeSkillLevelEntitiesForChapters(final List<UUID> chapterIds,
-                                                                                    final UUID userId) {
-        final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys
-                = chapterIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
+    public List<SkillLevels> getSkillLevelsForSkillIds(List<UUID> skillIds, UUID userId) {
+        return getSkillLevelEntitiesForSkillIds(skillIds, userId).stream().map(mapper::entityToDto).toList();
 
-        // try to get the entities for the chapters
+    }
+
+    /**
+     * Returns the skill levels for a given user and a course.
+     *
+     * @param courseId The ids of the course to get the skill levels for
+     * @param userId   The id of the user to get the skill levels for
+     * @return A list containing the skill levels for the given course
+     */
+    private List<AllSkillLevelsEntity> getSkillLevelEntitiesForCourse(final UUID courseId,
+                                                                      final UUID userId) {
+        List<SkillsForCourse> skills = skillsForCourseRepository.findByCourseId(courseId);
+        List<UUID> skillIds = new ArrayList<>();
+        for (SkillsForCourse skillsForCourse : skills) {
+            skillIds.add(skillsForCourse.getSkillId());
+        }
+        return getSkillLevelEntitiesForSkillIds(skillIds, userId);
+
+    }
+
+
+    /**
+     * Returns the skill levels for a given user and skills.
+     *
+     * @param skillIds The ids of the skills to get the skill levels for
+     * @param userId   The id of the user to get the skill levels for
+     * @return A list containing the skill levels for the given course
+     */
+    private List<AllSkillLevelsEntity> getSkillLevelEntitiesForSkillIds(final List<UUID> skillIds,
+                                                                        final UUID userId) {
+        final List<AllSkillLevelsEntity.PrimaryKey> primaryKeys = skillIds.stream().map(x -> new AllSkillLevelsEntity.PrimaryKey(x, userId)).toList();
         final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findAllById(primaryKeys);
-
-        // if an entity was found of every chapter, we're done
-        if (entities.size() == chapterIds.size()) {
-            return chapterIds.stream().map(id -> entities.stream()
-                    .filter(x -> x.getId().getChapterId().equals(id))
-                    .findFirst()
-                    .orElseThrow()).toList();
+        List<AllSkillLevelsEntity> newSkillLevels = new ArrayList<>();
+        for (UUID skillId : skillIds) {
+            boolean found = false;
+            for (AllSkillLevelsEntity entity : entities) {
+                if (entity.getId().getSkillId().equals(skillId)) {
+                    found = true;
+                    newSkillLevels.add(entity);
+                    break;
+                }
+            }
+            if (!found) {
+                AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
+                newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(skillId, userId));
+                newEntity.setRemember(initializeSkillLevelEntity(0));
+                newEntity.setUnderstand(initializeSkillLevelEntity(0));
+                newEntity.setApply(initializeSkillLevelEntity(0));
+                newEntity.setAnalyze(initializeSkillLevelEntity(0));
+                newEntity.setEvaluate(initializeSkillLevelEntity(0));
+                newEntity.setCreate(initializeSkillLevelEntity(0));
+                newSkillLevels.add(newEntity);
+            }
         }
+        return newSkillLevels;
+    }
 
 
-        // the list might not contain an entity for every chapter if that entity hasn't been created yet. Let's find
-        // the entities that are still missing
-        final List<UUID> chapterIdsWithMissingEntities = new ArrayList<>(chapterIds);
-        chapterIdsWithMissingEntities.removeIf(x -> entities.stream().anyMatch(y -> y.getId().getChapterId().equals(x)));
+    /**
+     * Deletes all skill levels for a given course. As well as all skill abilities for the associated skill abilities
+     *
+     * @param courseId The id of the course to delete the skill levels for
+     */
+    public void deleteSkillLevelsForCourse(final UUID courseId) {
+        final List<SkillsForCourse> skills = skillsForCourseRepository.findByCourseId(courseId);
 
-        // create the missing entities
-        final List<AllSkillLevelsEntity> createdEntities = new ArrayList<>(chapterIdsWithMissingEntities.size());
-        for (final UUID chapterId : chapterIdsWithMissingEntities) {
-            final AllSkillLevelsEntity newEntity = new AllSkillLevelsEntity();
-            newEntity.setId(new AllSkillLevelsEntity.PrimaryKey(chapterId, userId));
-            newEntity.setRemember(initializeSkillLevelEntity(0));
-            newEntity.setUnderstand(initializeSkillLevelEntity(0));
-            newEntity.setApply(initializeSkillLevelEntity(0));
-            newEntity.setAnalyze(initializeSkillLevelEntity(0));
-
-            // store in the db
-            createdEntities.add(skillLevelsRepository.save(newEntity));
+        //get all SkillIds and delete the corresponding abilities
+        HashSet<UUID> skillIds = new HashSet<>();
+        HashSet<UUID> userIds = new HashSet<>();
+        for (SkillsForCourse skill : skills) {
+            skillIds.add(skill.getSkillId());
         }
-
-        // combine the entities that were found with the newly created ones in the order of the chapterIds list
-        return chapterIds.stream()
-                .map(chapterId -> {
-                    final Optional<AllSkillLevelsEntity> entity = entities.stream()
-                            .filter(x -> x.getId().getChapterId().equals(chapterId))
-                            .findFirst();
-
-                    return entity.orElseGet(() -> createdEntities.stream()
-                            .filter(x -> x.getId().getChapterId().equals(chapterId))
-                            .findFirst()
-                            .orElseThrow());
-                }).toList();
+        for (UUID skillId : skillIds) {
+            List<AllSkillLevelsEntity> abilitiesForSkillId = skillLevelsRepository.findByIdSkillId(skillId);
+            for (AllSkillLevelsEntity ability : abilitiesForSkillId) {
+                skillAbilityRepository.deleteById(new SkillAbilityEntity.PrimaryKey(skillId, ability.getId().getUserId()));
+                skillLevelsRepository.deleteById(new AllSkillLevelsEntity.PrimaryKey(skillId, ability.getId().getUserId()));
+            }
+        }
     }
 
     /**
-     * Initializes a skill level entity with the given initial value.
+     * Deletes the item difficulty for the given item id
      *
-     * @param initialValue The initial value to set the skill level to
-     * @return The initialized skill level entity
+     * @param itemId The id of the item whose difficulty should be deleted
      */
-    private SkillLevelEntity initializeSkillLevelEntity(final int initialValue) {
-        final SkillLevelEntity skillLevelEntity = new SkillLevelEntity();
+    public void deleteItemDifficulty(final UUID itemId) {
+        itemDifficultyRepository.deleteById(itemId);
+    }
+
+    private SkillLevelEntity initializeSkillLevelEntity(final float initialValue) {
+        final SkillLevelEntity skillLevelEntity = new SkillLevelEntity(initialValue);
         skillLevelEntity.setValue(initialValue);
         skillLevelEntity.setLog(new ArrayList<>());
         return skillLevelEntity;
-    }
-
-    /**
-     * Deletes all skill levels for a given chapter.
-     *
-     * @param chapterId The id of the chapter to delete the skill levels for
-     */
-    public void deleteSkillLevelsForChapter(final UUID chapterId) {
-        final List<AllSkillLevelsEntity> entities = skillLevelsRepository.findByIdChapterId(chapterId);
-        skillLevelsRepository.deleteAll(entities);
     }
 }
