@@ -1,19 +1,18 @@
-version: "3"
-
 services:
-  database-skilllevel:
-    image: postgres:alpine
+  database:
+    image: pgvector/pgvector:pg16
     restart: always
     expose:
-      - 8032
+      - 5432
     ports:
-      - "8032:5432"
+      - "5432:5432"
     volumes:
-      - skillleveldata:/var/lib/postgresql/data
+      - dbdata:/var/lib/postgresql/data
+      - ./../skilllevel_service/pg-init-scripts:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
-      - POSTGRES_DB=skilllevel_service
+      - POSTGRES_CREATE_DB_SKILLLEVEL_SERVICE=skilllevel_service
   app-skilllevel:
     build:
       context: ./../skilllevel_service # necessary because otherwise docker-compose overrides the context path when merging multiple docker-compose.yml files
@@ -23,11 +22,11 @@ services:
       - "8000:8000"
       - "8001:8001"
     depends_on:
-      - database-skilllevel
+      - database
     links:
-      - database-skilllevel
+      - database
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database-skilllevel:5432/skilllevel_service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/skilllevel_service
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
   dapr-skilllevel:
@@ -50,7 +49,7 @@ services:
     expose:
       - "6379"
 volumes:
-  skillleveldata:
+  dbdata:
   testdata:
 networks:
   default:
