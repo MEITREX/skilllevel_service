@@ -107,8 +107,8 @@ repositories {
 
 dependencies {
 
-	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.2'
-	implementation 'de.unistuttgart.iste.meitrex:content_service:1.0.6'
+	implementation 'de.unistuttgart.iste.meitrex:meitrex-common:1.2.6'
+	implementation 'de.unistuttgart.iste.meitrex:content_service:1.0.8'
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-graphql'
@@ -120,13 +120,14 @@ dependencies {
 	implementation 'com.graphql-java:graphql-java-extended-validation:22.0'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'io.dapr:dapr-sdk:1.+' // Dapr's core SDK with all features, except Actors.
-	implementation 'io.dapr:dapr-sdk-springboot:1.+' // Dapr's SDK integration with SpringBoot
+	implementation 'io.dapr:dapr-sdk-springboot:1.+'// Dapr's SDK integration with SpringBoot
+	implementation 'org.jetbrains:annotations:26.0.1'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'de.unistuttgart.iste.meitrex:meitrex-common-test:1.2'
+	testImplementation 'de.unistuttgart.iste.meitrex:meitrex-common-test:1.2.6'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework:spring-webflux'
 	testImplementation 'org.springframework.graphql:spring-graphql-test'
