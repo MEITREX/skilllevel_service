@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
-import de.unistuttgart.iste.meitrex.common.event.LevelOfBloomsTaxonomy;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -51,10 +50,10 @@ class SkillLevelCalculateLevelsTest {
         final UUID itemId = UUID.randomUUID();
         final UUID itemId2 = UUID.randomUUID();
         final ArrayList<UUID> skillIds = new ArrayList<>();
-        final ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        final ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         final ArrayList<ItemResponse> responses = new ArrayList<ItemResponse>();
-        levels.add(LevelOfBloomsTaxonomy.REMEMBER);
-        levels.add(LevelOfBloomsTaxonomy.ANALYZE);
+        levels.add(BloomLevel.REMEMBER);
+        levels.add(BloomLevel.ANALYZE);
         skillIds.add(skillId);
         ItemResponse response1 = ItemResponse.builder()
                 .itemId(itemId)

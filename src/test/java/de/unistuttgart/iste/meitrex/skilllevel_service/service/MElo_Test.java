@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
-import de.unistuttgart.iste.meitrex.common.event.LevelOfBloomsTaxonomy;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.meitrex.generated.dto.BloomLevel;
@@ -61,7 +60,7 @@ public class MElo_Test {
         //give the new assessment to M-Elo to update the item and skill
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -96,7 +95,7 @@ public class MElo_Test {
         difficulty = repoItemDifficulty.findById(itemId);
         assertFalse(difficulty.isPresent());
         skillIds.add(skillId);
-        levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        levels = new ArrayList<BloomLevel>();
         responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(0).skillIds(skillIds).levelsOfBloomsTaxonomy(levels).build();
@@ -139,7 +138,7 @@ public class MElo_Test {
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
         skillIds.add(skillId2);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -180,7 +179,7 @@ public class MElo_Test {
         assertFalse(ability2.isPresent());
         skillIds.add(skillId);
         skillIds.add(skillId2);
-        levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        levels = new ArrayList<BloomLevel>();
         responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(0).skillIds(skillIds).levelsOfBloomsTaxonomy(levels).build();
@@ -236,7 +235,7 @@ public class MElo_Test {
         skillIds.add(skillId2);
         skillIds.add(skillId3);
         skillIds.add(skillId4);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -296,7 +295,7 @@ public class MElo_Test {
         //give the new assessment to M-Elo to update the item and skill
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -347,7 +346,7 @@ public class MElo_Test {
         //give the new assessment to M-Elo to update the item and skill
         skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        levels = new ArrayList<BloomLevel>();
         responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(0)
@@ -403,7 +402,7 @@ public class MElo_Test {
         //give the new assessment to M-Elo to update the item and skill
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -452,7 +451,7 @@ public class MElo_Test {
         UUID skillId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID itemId = UUID.randomUUID();
-        LevelOfBloomsTaxonomy level = LevelOfBloomsTaxonomy.UNDERSTAND;
+        BloomLevel level = BloomLevel.UNDERSTAND;
         //make sure, that the item and the skill is not saved in the database
         Optional<SkillAbilityEntity> ability = repoSkillAbility.findById(new SkillAbilityEntity.PrimaryKey(skillId, userId));
         assertFalse(ability.isPresent());
@@ -463,7 +462,7 @@ public class MElo_Test {
         //give the new assessment to M-Elo to update the item and skill
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         levels.add(level);
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
@@ -497,9 +496,9 @@ public class MElo_Test {
         skillId = UUID.randomUUID();
         userId = UUID.randomUUID();
         itemId = UUID.randomUUID();
-        level = LevelOfBloomsTaxonomy.UNDERSTAND;
-        LevelOfBloomsTaxonomy level2 = LevelOfBloomsTaxonomy.REMEMBER;
-        levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        level = BloomLevel.UNDERSTAND;
+        BloomLevel level2 = BloomLevel.REMEMBER;
+        levels = new ArrayList<BloomLevel>();
         levels.add(level);
         levels.add(level2);
         ability = repoSkillAbility.findById(new SkillAbilityEntity.PrimaryKey(skillId, userId));
@@ -588,7 +587,7 @@ public class MElo_Test {
         skillIds.add(skillId1);
         skillIds.add(skillId2);
         skillIds.add(skillId3);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(1)
@@ -696,7 +695,7 @@ public class MElo_Test {
         assertThat(skillAbility).isEqualTo(ability);
         ArrayList<UUID> skillIds = new ArrayList<>();
         skillIds.add(skillId);
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         ItemResponse responseItem = new ItemResponse().builder()
                 .itemId(itemId)
                 .response(0)
