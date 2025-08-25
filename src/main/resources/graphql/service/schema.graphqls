@@ -1,4 +1,4 @@
-extend type Query {
+type Query {
   """
   Get the skill levels of the current user for all skill types for a list of chapter ids.
   ⚠️ This query is only accessible internally in the system and allows the caller to fetch contents without
@@ -38,7 +38,7 @@ extend type Query {
 
 }
 
-extend type Mutation {
+type Mutation {
   """
   ONLY FOR TESTING PURPOSES. DO NOT USE IN FRONTEND. WILL BE REMOVED.
 
