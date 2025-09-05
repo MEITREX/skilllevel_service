@@ -1,7 +1,6 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service;
 
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
-import de.unistuttgart.iste.meitrex.common.event.LevelOfBloomsTaxonomy;
 import de.unistuttgart.iste.meitrex.common.testutil.GraphQlApiTest;
 import de.unistuttgart.iste.meitrex.common.testutil.TablesToDelete;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
@@ -53,17 +52,17 @@ class SkillLevelMultipleSkillTypesTest {
         UUID itemId = UUID.randomUUID();
         UUID itemId2 = UUID.randomUUID();
         final ArrayList<UUID> skillIds = new ArrayList<>();
-        ArrayList<LevelOfBloomsTaxonomy> levels = new ArrayList<LevelOfBloomsTaxonomy>();
+        ArrayList<BloomLevel> levels = new ArrayList<BloomLevel>();
         final ArrayList<ItemResponse> responses = new ArrayList<ItemResponse>();
-        levels.add(LevelOfBloomsTaxonomy.REMEMBER);
+        levels.add(BloomLevel.REMEMBER);
         skillIds.add(skillId);
         ItemResponse response1 = ItemResponse.builder()
                 .itemId(itemId)
                 .response(1)
                 .skillIds(skillIds)
                 .levelsOfBloomsTaxonomy(levels).build();
-        levels = new ArrayList<LevelOfBloomsTaxonomy>();
-        levels.add(LevelOfBloomsTaxonomy.UNDERSTAND);
+        levels = new ArrayList<BloomLevel>();
+        levels.add(BloomLevel.UNDERSTAND);
         ItemResponse response2 = ItemResponse.builder()
                 .itemId(itemId2)
                 .response(1)

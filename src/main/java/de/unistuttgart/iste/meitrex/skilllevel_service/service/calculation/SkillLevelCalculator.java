@@ -1,8 +1,9 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation;
 
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
-import de.unistuttgart.iste.meitrex.common.event.LevelOfBloomsTaxonomy;
+import de.unistuttgart.iste.meitrex.common.event.skilllevels.UserSkillLevelChangedEvent;
 import de.unistuttgart.iste.meitrex.generated.dto.BloomLevel;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.*;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
@@ -34,6 +35,7 @@ public class SkillLevelCalculator {
     private final BloomLevelAbilityRepository bloomLevelAbilityRepository;
 
     private final AllSkillLevelsRepository allSkillLevelsRepository;
+    private final TopicPublisher topicPublisher;
 
     private final static float ALPHA = 0.05f;
     private final static float BETA = 1f;
@@ -82,8 +84,7 @@ public class SkillLevelCalculator {
             skillAbilities.add(ability.getAbility());
         }
         List<Float> bloomLevelAbilities = new ArrayList<Float>();
-        for (LevelOfBloomsTaxonomy levelOfBloomsTaxonomy : response.getLevelsOfBloomsTaxonomy()) {
-            BloomLevel level = mapLevelOfBloomsTaxonomyToBloomLevel(levelOfBloomsTaxonomy);
+        for (BloomLevel level : response.getLevelsOfBloomsTaxonomy()) {
             BloomLevelAbilityEntity ability = bloomLevelAbilityRepository.findByUserIdAndBloomLevel(userId, level);
             if (ability == null) {
                 ability = createBloomAbility(userId, level);
@@ -103,8 +104,7 @@ public class SkillLevelCalculator {
         for (UUID skillId : response.getSkillIds()) {
             updateSkillAbility(userId, skillId, difficulty, correctResponse, alpha);
         }
-        for (LevelOfBloomsTaxonomy levelOfBloomsTaxonomy : response.getLevelsOfBloomsTaxonomy()) {
-            BloomLevel level = mapLevelOfBloomsTaxonomyToBloomLevel(levelOfBloomsTaxonomy);
+        for (BloomLevel level : response.getLevelsOfBloomsTaxonomy()) {
             updateBloomLevelAbilities(userId, level, difficulty, correctResponse, alpha);
         }
         updateSkillLevels(response, userId, prediction);
@@ -119,8 +119,7 @@ public class SkillLevelCalculator {
      */
     private void updateSkillLevels(ItemResponse response, UUID userId, float prediction) {
         for (UUID skillId : response.getSkillIds()) {
-            for (LevelOfBloomsTaxonomy levelOfBloomsTaxonomy : response.getLevelsOfBloomsTaxonomy()) {
-                BloomLevel level = mapLevelOfBloomsTaxonomyToBloomLevel(levelOfBloomsTaxonomy);
+            for (BloomLevel level : response.getLevelsOfBloomsTaxonomy()) {
                 updateSkillLevel(userId, skillId, level, response.getItemId(), response.getResponse(), prediction);
             }
         }
@@ -170,6 +169,13 @@ public class SkillLevelCalculator {
         }
         setSkillLevelEntityBySkillType(entity, bloomLevel, skillLevelEntity);
         allSkillLevelsRepository.save(entity);
+        topicPublisher.notifyUserSkillLevelChanged(UserSkillLevelChangedEvent.builder()
+                .userId(userId)
+                .skillId(skillId)
+                .bloomLevel(bloomLevel)
+                .oldValue(oldAbility)
+                .newValue(newAbility)
+                .build());
     }
 
     /**
@@ -415,21 +421,4 @@ public class SkillLevelCalculator {
         skillLevelEntity.setLog(new ArrayList<>());
         return skillLevelEntity;
     }
-
-    /***
-     * maps the Level of Blooms Taxonomy from Dapr Topic to the same Level of Blooms Taxonomy of the DTO
-     * @param levelOfBloomsOfBloomsTaxonomy level of blooms Taxonomy
-     * @return mapped level for the DTO
-     */
-    private BloomLevel mapLevelOfBloomsTaxonomyToBloomLevel(LevelOfBloomsTaxonomy levelOfBloomsOfBloomsTaxonomy) {
-        return switch (levelOfBloomsOfBloomsTaxonomy) {
-            case LevelOfBloomsTaxonomy.UNDERSTAND -> BloomLevel.UNDERSTAND;
-            case LevelOfBloomsTaxonomy.REMEMBER -> BloomLevel.REMEMBER;
-            case LevelOfBloomsTaxonomy.APPLY -> BloomLevel.APPLY;
-            case LevelOfBloomsTaxonomy.ANALYZE -> BloomLevel.ANALYZE;
-            case LevelOfBloomsTaxonomy.EVALUATE -> BloomLevel.EVALUATE;
-            case LevelOfBloomsTaxonomy.CREATE -> BloomLevel.CREATE;
-        };
-    }
-
 }
