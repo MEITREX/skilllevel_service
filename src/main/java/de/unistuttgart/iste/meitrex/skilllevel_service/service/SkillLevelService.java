@@ -1,5 +1,7 @@
 package de.unistuttgart.iste.meitrex.skilllevel_service.service;
 
+import de.unistuttgart.iste.meitrex.common.dapr.TopicPublisher;
+import de.unistuttgart.iste.meitrex.common.event.skilllevels.UserSkillLevelChangedEvent;
 import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
@@ -34,6 +36,8 @@ public class SkillLevelService {
     private final ItemDifficultyRepository itemDifficultyRepository;
 
     private final SkillsForCourseRepository skillsForCourseRepository;
+    
+    private final TopicPublisher topicPublisher;
 
     /**
      * Recalculates the skill levels for a given user and responses.
@@ -169,5 +173,42 @@ public class SkillLevelService {
         skillLevelEntity.setValue(initialValue);
         skillLevelEntity.setLog(new ArrayList<>());
         return skillLevelEntity;
+    }
+
+    /**
+     * Publishes UserSkillLevelChangedEvent for all skill levels of a given user.
+     * This is used to respond to RequestUserSkillLevelEvent.
+     *
+     * @param userId The ID of the user to publish skill levels for
+     */
+    public void publishAllSkillLevelsForUser(final UUID userId) {
+        List<AllSkillLevelsEntity> allSkillLevels = skillLevelsRepository.findByIdUserId(userId);
+        
+        for (AllSkillLevelsEntity skillLevelEntity : allSkillLevels) {
+            UUID skillId = skillLevelEntity.getId().getSkillId();
+            
+            publishSkillLevelEvent(userId, skillId, BloomLevel.REMEMBER, skillLevelEntity.getRemember().getValue());
+            publishSkillLevelEvent(userId, skillId, BloomLevel.UNDERSTAND, skillLevelEntity.getUnderstand().getValue());
+            publishSkillLevelEvent(userId, skillId, BloomLevel.APPLY, skillLevelEntity.getApply().getValue());
+            publishSkillLevelEvent(userId, skillId, BloomLevel.ANALYZE, skillLevelEntity.getAnalyze().getValue());
+            publishSkillLevelEvent(userId, skillId, BloomLevel.EVALUATE, skillLevelEntity.getEvaluate().getValue());
+            publishSkillLevelEvent(userId, skillId, BloomLevel.CREATE, skillLevelEntity.getCreate().getValue());
+        }
+    }
+
+    /**
+     * Method to publish a single UserSkillLevelChangedEvent.
+     * oldValue and newValue are set to the same value since this is just for publishing existing skill levels and not for indicating a change
+     */
+    private void publishSkillLevelEvent(UUID userId, UUID skillId, BloomLevel bloomLevel, float value) {
+        UserSkillLevelChangedEvent event = UserSkillLevelChangedEvent.builder()
+                .userId(userId)
+                .skillId(skillId)
+                .bloomLevel(bloomLevel)
+                .oldValue(value)
+                .newValue(value)
+                .build();
+        
+        topicPublisher.notifyUserSkillLevelChanged(event);
     }
 }
