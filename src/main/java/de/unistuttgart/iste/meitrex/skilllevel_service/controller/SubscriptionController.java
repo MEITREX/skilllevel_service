@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.skilllevel_service.controller;
 
 import de.unistuttgart.iste.meitrex.common.event.CourseChangeEvent;
 import de.unistuttgart.iste.meitrex.common.event.CrudOperation;
+import de.unistuttgart.iste.meitrex.common.event.RequestUserSkillLevelEvent;
 import de.unistuttgart.iste.meitrex.common.event.UserProgressUpdatedEvent;
 import de.unistuttgart.iste.meitrex.common.event.ItemChangeEvent;
 
@@ -80,6 +81,26 @@ public class SubscriptionController {
                 // we need to catch all exceptions because otherwise if some invalid data is in the message queue
                 // it will never get processed and instead the service will just crash forever
                 log.error("Error while processing item change event", e);
+            }
+        });
+    }
+
+    /**
+     * Dapr topic subscription to handle requests for user skill levels.
+     * When a service requests skill levels for a user, this publishes UserSkillLevelChangedEvent for each skill level the user has.
+     */
+    @Topic(name = "request-user-skill-level", pubsubName = "meitrex")
+    @PostMapping(path = "/skilllevel-service/request-user-skill-level-pubsub")
+    public Mono<Void> onRequestUserSkillLevel(@RequestBody final CloudEvent<RequestUserSkillLevelEvent> cloudEvent) {
+        return Mono.fromRunnable(() -> {
+            try {
+                RequestUserSkillLevelEvent event = cloudEvent.getData();
+                
+                skillLevelService.publishAllSkillLevelsForUser(event.getUserId());
+            } catch (final Exception e) {
+                // we need to catch all exceptions because otherwise if some invalid data is in the message queue
+                // it will never get processed and instead the service will just crash forever
+                log.error("Error while processing request user skill level event", e);
             }
         });
     }

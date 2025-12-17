@@ -14,4 +14,6 @@ public interface AllSkillLevelsRepository extends JpaRepository<AllSkillLevelsEn
 
     List<AllSkillLevelsEntity> findByIdSkillId(UUID skillId);
 
+    List<AllSkillLevelsEntity> findByIdUserId(UUID userId);
+
 }
