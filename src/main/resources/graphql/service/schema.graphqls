@@ -36,6 +36,9 @@ type Query {
   """
   _internal_noauth_skillLevelForUserBySkillIds(skillIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
 
+  _internal_noauth_averageSkillValuesBySkillIds(skillIds: [UUID!]!): [SkillAverageValue!]!
+
+  _internal_noauth_skillValueBySkillId(skillId: UUID!): Float!
 }
 
 type Mutation {
@@ -129,4 +132,13 @@ type SkillLevelLogItem {
   the probability of a correct response, that M-Elo predicts
   """
   predictedCorrectness:Float!
+}
+
+type SkillAverageValue {
+  
+  skillId: UUID!
+
+  averageValue: Float!
+
+  participantCount: Int!
 }

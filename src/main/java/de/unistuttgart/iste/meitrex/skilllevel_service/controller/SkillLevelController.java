@@ -3,6 +3,7 @@ package de.unistuttgart.iste.meitrex.skilllevel_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.GlobalPermissionAccessValidator;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.SkillLevels;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAverageValueEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.service.SkillLevelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,5 +45,14 @@ public class SkillLevelController {
         return skilllevelService.getSkillLevelsForSkillIds(skillIds, userId);
     }
 
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "averageSkillValuesBySkillIds")
+    public List<SkillAverageValueEntity> averageSkillValuesBySkillIds(@Argument final List<UUID> skillIds) {
+        return skilllevelService.getAverageSkillValuesForSkillIds(skillIds);
+    }
+
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillValueBySkillId")
+    public Float skillValueBySkillId(@Argument final UUID skillId, @ContextValue final LoggedInUser currentUser) {
+        return skilllevelService.getSkillValueForSkillId(skillId, currentUser.getId());
+    }
 
 }
