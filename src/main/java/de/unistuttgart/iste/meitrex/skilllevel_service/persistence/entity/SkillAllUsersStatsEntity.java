@@ -7,17 +7,17 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 /** * Database entity which represents for every skill the average skillValue in the course. */ 
 
-@Entity(name = "SkillAverageValue") 
+@Entity(name = "SkillAllUsersStats") 
 @Data 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SkillAverageValueEntity { 
+public class SkillAllUsersStatsEntity { 
     
     @Id private UUID skillId; 
     
-    /** * Current average value of the skill level. Can range from 0 to 1. */
-    @Column(nullable = false) private float averageValue;
+    /** * Current sum of the skill values from all users in a course with this skill. */
+    @Column(nullable = false) private float skillValueSum;
 
     /** * Current participant count of the skill level. */
     @Column(nullable = false) private int participantCount;

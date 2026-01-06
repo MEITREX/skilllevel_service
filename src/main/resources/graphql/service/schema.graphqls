@@ -36,7 +36,7 @@ type Query {
   """
   _internal_noauth_skillLevelForUserBySkillIds(skillIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
 
-  _internal_noauth_averageSkillValuesBySkillIds(skillIds: [UUID!]!): [SkillAverageValue!]!
+  _internal_noauth_skillsAllUsersStatsBySkillIds(skillIds: [UUID!]!): [SkillAllUsersStats!]!
 
   _internal_noauth_skillValueBySkillId(skillId: UUID!): Float!
 }
@@ -134,11 +134,11 @@ type SkillLevelLogItem {
   predictedCorrectness:Float!
 }
 
-type SkillAverageValue {
+type SkillAllUsersStats {
   
   skillId: UUID!
 
-  averageValue: Float!
+  skillValueSum: Float!
 
   participantCount: Int!
 }

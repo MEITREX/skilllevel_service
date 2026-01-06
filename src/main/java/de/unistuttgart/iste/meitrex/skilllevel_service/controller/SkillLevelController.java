@@ -3,7 +3,7 @@ package de.unistuttgart.iste.meitrex.skilllevel_service.controller;
 import de.unistuttgart.iste.meitrex.common.user_handling.GlobalPermissionAccessValidator;
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.SkillLevels;
-import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAverageValueEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAllUsersStatsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.service.SkillLevelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -45,9 +44,9 @@ public class SkillLevelController {
         return skilllevelService.getSkillLevelsForSkillIds(skillIds, userId);
     }
 
-    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "averageSkillValuesBySkillIds")
-    public List<SkillAverageValueEntity> averageSkillValuesBySkillIds(@Argument final List<UUID> skillIds) {
-        return skilllevelService.getAverageSkillValuesForSkillIds(skillIds);
+    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillsAllUsersStatsBySkillIds")
+    public List<SkillAllUsersStatsEntity> skillsAllUsersStatsBySkillIds(@Argument final List<UUID> skillIds) {
+        return skilllevelService.getSkillsAllUsersStatsForSkillIds(skillIds);
     }
 
     @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillValueBySkillId")

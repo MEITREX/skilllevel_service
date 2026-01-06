@@ -6,9 +6,9 @@ import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAbilityEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAllUsersStatsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillLevelEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillsForCourse;
-import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAverageValueEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.mapper.SkillLevelMapper;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.AllSkillLevelsRepository;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.repository.ItemDifficultyRepository;
@@ -81,45 +81,47 @@ public class SkillLevelService {
     }
 
     /**
-     * Returns the skill average values for given skillIds.
+     * Returns the stats for the skills for all users from the course of the skills.
      *
      * @param skillIds List of skillIds
-     * @return List of SkillAverageValueEntity that represents the average values of the given skills
+     * @return List of SkillAllUsersStatsEntity that represents stats
+     * like skillValueSum and participantCount of the given skills
      */
-    public List<SkillAverageValueEntity> getAverageSkillValuesForSkillIds(List<UUID> skillIds) {
-        List<SkillAverageValueEntity> skillAverageValues = new ArrayList<>();
+    public List<SkillAllUsersStatsEntity> getSkillsAllUsersStatsForSkillIds(List<UUID> skillIds) {
+        List<SkillAllUsersStatsEntity> skillAllUsersStats = new ArrayList<>();
         for(UUID skillId : skillIds) {
-            skillAverageValues.add(getAverageSkillValueForSkillId(skillId));
+            skillAllUsersStats.add(getSkillAllUsersStatsForSkillId(skillId));
         }
-        return skillAverageValues;
+        return skillAllUsersStats;
     }
 
     /**
-     * Returns the skill average value for a given skillId.
+     * Returns the skill's stats for a given skillId.
      *
      * @param skillId skillId of skillLevels
-     * @return SkillAverageValueEntity that represents the average value of a specific skill
+     * @return SkillValueAllUsersStatsEntity that represents stats
+     * like skillValue sum and participantCount of the given skills
      */
-    private SkillAverageValueEntity getAverageSkillValueForSkillId(UUID skillId) {
+    private SkillAllUsersStatsEntity getSkillAllUsersStatsForSkillId(UUID skillId) {
         List<AllSkillLevelsEntity> skillLevels = skillLevelsRepository.findByIdSkillId(skillId);
         List<Float> skillValues = new ArrayList<>();
         for(AllSkillLevelsEntity skillLevel : skillLevels) {
             skillValues.add(getSkillValueForSkillLevel(skillLevel));
         }
-        float sum = 0f;
+        float skillValueSum = 0f;
         for(Float skillValue : skillValues) {
-            sum += skillValue;
+            skillValueSum += skillValue;
         }
-        SkillAverageValueEntity skillAverageValue = new SkillAverageValueEntity();
-        skillAverageValue.setSkillId(skillId);
-        skillAverageValue.setParticipantCount(skillValues.size());
+        SkillAllUsersStatsEntity skillAllUsersStats = new SkillAllUsersStatsEntity();
+        skillAllUsersStats.setSkillId(skillId);
+        skillAllUsersStats.setParticipantCount(skillValues.size());
         if (skillValues.isEmpty()) {
-            skillAverageValue.setAverageValue(0f);
+            skillAllUsersStats.setSkillValueSum(0f);
         } 
         else {
-            skillAverageValue.setAverageValue(sum / skillValues.size());
+            skillAllUsersStats.setSkillValueSum(skillValueSum);
         }
-        return skillAverageValue;
+        return skillAllUsersStats;
     }
 
     /**
