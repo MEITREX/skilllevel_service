@@ -18,9 +18,12 @@ import de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillValueEntity;
 
 @Service
 @Slf4j
@@ -150,15 +153,22 @@ public class SkillLevelService {
     }
 
     /**
-     * return the skill value of the given user and the given skill
+     * return the skill values for the given user and skills
      *
-     * @param skillId the ids of the skill
+     * @param skillIds the ids of the skills
      * @param userId   the id of the user
-     * @return the skill value for the given user and skill
+     * @return the skill values for the given user and skills
      */
-    public Float getSkillValueForSkillId(UUID skillId, UUID userId) {
-        List<AllSkillLevelsEntity> skillLevels = getSkillLevelEntitiesForSkillIds(List.of(skillId), userId);
-        return getSkillValueForSkillLevel(skillLevels.get(0));
+    public List<SkillValueEntity> getSkillValuesForSkillIds(List <UUID> skillIds, UUID userId) {
+        List<AllSkillLevelsEntity> skillLevels = getSkillLevelEntitiesForSkillIds(skillIds, userId);
+        List<SkillValueEntity> skillValues = new ArrayList<>();
+        for(AllSkillLevelsEntity skillLevel : skillLevels) {
+            SkillValueEntity entity = new SkillValueEntity();
+            entity.setSkillId(skillLevel.getId().getSkillId());
+            entity.setSkillValue(getSkillValueForSkillLevel(skillLevel));
+            skillValues.add(entity);
+        }
+        return skillValues;
     }
 
     /**
