@@ -6,6 +6,7 @@ import de.unistuttgart.iste.meitrex.generated.dto.*;
 import de.unistuttgart.iste.meitrex.common.event.ItemResponse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.AllSkillLevelsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAbilityEntity;
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAllUsersStatsEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillLevelEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillsForCourse;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.mapper.SkillLevelMapper;
@@ -17,9 +18,12 @@ import de.unistuttgart.iste.meitrex.skilllevel_service.service.calculation.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillValueEntity;
 
 @Service
 @Slf4j
@@ -77,7 +81,92 @@ public class SkillLevelService {
      */
     public List<SkillLevels> getSkillLevelsForSkillIds(List<UUID> skillIds, UUID userId) {
         return getSkillLevelEntitiesForSkillIds(skillIds, userId).stream().map(mapper::entityToDto).toList();
+    }
 
+    /**
+     * Returns the stats for the skills for all users from the course of the skills.
+     *
+     * @param skillIds List of skillIds
+     * @return List of SkillAllUsersStatsEntity that represents stats
+     * like skillValueSum and participantCount of the given skills
+     */
+    public List<SkillAllUsersStatsEntity> getSkillsAllUsersStatsForSkillIds(List<UUID> skillIds) {
+        List<SkillAllUsersStatsEntity> skillAllUsersStats = new ArrayList<>();
+        for (UUID skillId : skillIds) {
+            skillAllUsersStats.add(getSkillAllUsersStatsForSkillId(skillId));
+        }
+        return skillAllUsersStats;
+    }
+
+    /**
+     * Returns the skill's stats for a given skillId.
+     *
+     * @param skillId skillId of skillLevels
+     * @return SkillValueAllUsersStatsEntity that represents stats
+     * like skillValue sum and participantCount of the given skills
+     */
+    private SkillAllUsersStatsEntity getSkillAllUsersStatsForSkillId(UUID skillId) {
+        List<AllSkillLevelsEntity> skillLevels = skillLevelsRepository.findByIdSkillId(skillId);
+        List<Float> skillValues = new ArrayList<>();
+        for (AllSkillLevelsEntity skillLevel : skillLevels) {
+            skillValues.add(getSkillValueForSkillLevel(skillLevel));
+        }
+        float skillValueSum = 0f;
+        for (Float skillValue : skillValues) {
+            skillValueSum += skillValue;
+        }
+        SkillAllUsersStatsEntity skillAllUsersStats = new SkillAllUsersStatsEntity();
+        skillAllUsersStats.setSkillId(skillId);
+        skillAllUsersStats.setParticipantCount(skillValues.size());
+        if (skillValues.isEmpty()) {
+            skillAllUsersStats.setSkillValueSum(0f);
+        } else {
+            skillAllUsersStats.setSkillValueSum(skillValueSum);
+        }
+        return skillAllUsersStats;
+    }
+
+    /**
+     * Returns the skill value for a given skillLevel by combining all 6 skillLevelEntities.
+     *
+     * @param skillLevel skillLevel of a skill
+     * @return A float value that represents the skill value of a skill
+     */
+    private Float getSkillValueForSkillLevel(AllSkillLevelsEntity skillLevel) {
+        List<Float> values = List.of(
+            skillLevel.getRemember().getValue(),
+            skillLevel.getUnderstand().getValue(),
+            skillLevel.getApply().getValue(),
+            skillLevel.getAnalyze().getValue(),
+            skillLevel.getEvaluate().getValue(),
+            skillLevel.getCreate().getValue()
+        );
+        List<Float> nonZeroValues = values.stream().filter(v -> v > 0f).toList();
+        if (nonZeroValues.isEmpty()) {
+            return 0f;
+        } else {
+            float sum = nonZeroValues.stream().reduce(0f, Float::sum);
+            return sum / nonZeroValues.size();
+        }
+    }
+
+    /**
+     * return the skill values for the given user and skills
+     *
+     * @param skillIds the ids of the skills
+     * @param userId   the id of the user
+     * @return the skill values for the given user and skills
+     */
+    public List<SkillValueEntity> getSkillValuesForSkillIds(List <UUID> skillIds, UUID userId) {
+        List<AllSkillLevelsEntity> skillLevels = getSkillLevelEntitiesForSkillIds(skillIds, userId);
+        List<SkillValueEntity> skillValues = new ArrayList<>();
+        for (AllSkillLevelsEntity skillLevel : skillLevels) {
+            SkillValueEntity entity = new SkillValueEntity();
+            entity.setSkillId(skillLevel.getId().getSkillId());
+            entity.setSkillValue(getSkillValueForSkillLevel(skillLevel));
+            skillValues.add(entity);
+        }
+        return skillValues;
     }
 
     /**
