@@ -92,7 +92,7 @@ public class SkillLevelService {
      */
     public List<SkillAllUsersStatsEntity> getSkillsAllUsersStatsForSkillIds(List<UUID> skillIds) {
         List<SkillAllUsersStatsEntity> skillAllUsersStats = new ArrayList<>();
-        for(UUID skillId : skillIds) {
+        for (UUID skillId : skillIds) {
             skillAllUsersStats.add(getSkillAllUsersStatsForSkillId(skillId));
         }
         return skillAllUsersStats;
@@ -108,11 +108,11 @@ public class SkillLevelService {
     private SkillAllUsersStatsEntity getSkillAllUsersStatsForSkillId(UUID skillId) {
         List<AllSkillLevelsEntity> skillLevels = skillLevelsRepository.findByIdSkillId(skillId);
         List<Float> skillValues = new ArrayList<>();
-        for(AllSkillLevelsEntity skillLevel : skillLevels) {
+        for (AllSkillLevelsEntity skillLevel : skillLevels) {
             skillValues.add(getSkillValueForSkillLevel(skillLevel));
         }
         float skillValueSum = 0f;
-        for(Float skillValue : skillValues) {
+        for (Float skillValue : skillValues) {
             skillValueSum += skillValue;
         }
         SkillAllUsersStatsEntity skillAllUsersStats = new SkillAllUsersStatsEntity();
@@ -120,8 +120,7 @@ public class SkillLevelService {
         skillAllUsersStats.setParticipantCount(skillValues.size());
         if (skillValues.isEmpty()) {
             skillAllUsersStats.setSkillValueSum(0f);
-        } 
-        else {
+        } else {
             skillAllUsersStats.setSkillValueSum(skillValueSum);
         }
         return skillAllUsersStats;
@@ -145,8 +144,7 @@ public class SkillLevelService {
         List<Float> nonZeroValues = values.stream().filter(v -> v > 0f).toList();
         if (nonZeroValues.isEmpty()) {
             return 0f;
-        }
-        else{
+        } else {
             float sum = nonZeroValues.stream().reduce(0f, Float::sum);
             return sum / nonZeroValues.size();
         }
@@ -162,7 +160,7 @@ public class SkillLevelService {
     public List<SkillValueEntity> getSkillValuesForSkillIds(List <UUID> skillIds, UUID userId) {
         List<AllSkillLevelsEntity> skillLevels = getSkillLevelEntitiesForSkillIds(skillIds, userId);
         List<SkillValueEntity> skillValues = new ArrayList<>();
-        for(AllSkillLevelsEntity skillLevel : skillLevels) {
+        for (AllSkillLevelsEntity skillLevel : skillLevels) {
             SkillValueEntity entity = new SkillValueEntity();
             entity.setSkillId(skillLevel.getId().getSkillId());
             entity.setSkillValue(getSkillValueForSkillLevel(skillLevel));
