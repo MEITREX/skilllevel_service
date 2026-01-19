@@ -215,7 +215,7 @@ public class SkillLevelCalculator {
             case EVALUATE -> allSkillLevelsEntity.setEvaluate(entity);
             case CREATE -> allSkillLevelsEntity.setCreate(entity);
         }
-        ;
+        allSkillLevelsEntity.setSkillValue(calculateSkillValueForAllSkillLevelsEntity(allSkillLevelsEntity));
     }
 
     /**
@@ -404,6 +404,7 @@ public class SkillLevelCalculator {
         newEntity.setAnalyze(initializeSkillLevelEntity(0));
         newEntity.setEvaluate(initializeSkillLevelEntity(0));
         newEntity.setCreate(initializeSkillLevelEntity(0));
+        newEntity.setSkillValue(0);
         // store in the db
         newEntity = allSkillLevelsRepository.save(newEntity);
         return newEntity;
@@ -420,5 +421,29 @@ public class SkillLevelCalculator {
         skillLevelEntity.setValue(initialValue);
         skillLevelEntity.setLog(new ArrayList<>());
         return skillLevelEntity;
+    }
+
+     /**
+     * Returns the skill value for a given skillLevel by combining all 6 skillLevelEntities.
+     *
+     * @param skillLevel skillLevel of a skill
+     * @return A float value that represents the skill value of a skill
+     */
+    private Float calculateSkillValueForAllSkillLevelsEntity(AllSkillLevelsEntity skillLevel) {
+        List<Float> values = List.of(
+            skillLevel.getRemember().getValue(),
+            skillLevel.getUnderstand().getValue(),
+            skillLevel.getApply().getValue(),
+            skillLevel.getAnalyze().getValue(),
+            skillLevel.getEvaluate().getValue(),
+            skillLevel.getCreate().getValue()
+        );
+        List<Float> nonZeroValues = values.stream().filter(v -> v > 0f).toList();
+        if (nonZeroValues.isEmpty()) {
+            return 0f;
+        } else {
+            float sum = nonZeroValues.stream().reduce(0f, Float::sum);
+            return sum / nonZeroValues.size();
+        }
     }
 }

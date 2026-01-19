@@ -22,6 +22,12 @@ public class AllSkillLevelsEntity {
     @EmbeddedId
     private PrimaryKey id;
 
+    /**
+     * Current value of the skill, the average of all skill level types. Can range from 0 to 1.
+     */
+    @Column(nullable = false)
+    private float skillValue;
+
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
     private SkillLevelEntity remember;
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)

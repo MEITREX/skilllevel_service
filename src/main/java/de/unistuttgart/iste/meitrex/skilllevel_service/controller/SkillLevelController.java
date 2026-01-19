@@ -49,10 +49,4 @@ public class SkillLevelController {
     public List<SkillAllUsersStatsEntity> skillsAllUsersStatsBySkillIds(@Argument final List<UUID> skillIds) {
         return skilllevelService.getSkillsAllUsersStatsForSkillIds(skillIds);
     }
-
-    @QueryMapping(name = INTERNAL_NOAUTH_PREFIX + "skillValuesBySkillIds")
-    public List<SkillValueEntity> skillValuesBySkillIds(@Argument final List<UUID> skillIds, @ContextValue final LoggedInUser currentUser) {
-        return skilllevelService.getSkillValuesForSkillIds(skillIds, currentUser.getId());
-    }
-
 }
