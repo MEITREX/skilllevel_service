@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -172,6 +173,7 @@ class SkillLevelPublishTest {
         entity.setAnalyze(createSkillLevelEntity(analyze));
         entity.setEvaluate(createSkillLevelEntity(evaluate));
         entity.setCreate(createSkillLevelEntity(create));
+        entity.setSkillValue(calculateSkillValueForAllSkillLevelsEntity(entity));
 
         return entity;
     }
@@ -183,6 +185,30 @@ class SkillLevelPublishTest {
         SkillLevelEntity entity = new SkillLevelEntity(value);
         entity.setValue(value);
         return entity;
+    }
+
+    /**
+     * Returns the skill value for a given skillLevel by combining all 6 skillLevelEntities.
+     *
+     * @param skillLevel skillLevel of a skill
+     * @return A float value that represents the skill value of a skill
+     */
+    private Float calculateSkillValueForAllSkillLevelsEntity(AllSkillLevelsEntity skillLevel) {
+        List<Float> values = List.of(
+            skillLevel.getRemember().getValue(),
+            skillLevel.getUnderstand().getValue(),
+            skillLevel.getApply().getValue(),
+            skillLevel.getAnalyze().getValue(),
+            skillLevel.getEvaluate().getValue(),
+            skillLevel.getCreate().getValue()
+        );
+        List<Float> nonZeroValues = values.stream().filter(v -> v > 0f).toList();
+        if (nonZeroValues.isEmpty()) {
+            return 0f;
+        } else {
+            float sum = nonZeroValues.stream().reduce(0f, Float::sum);
+            return sum / nonZeroValues.size();
+        }
     }
 
     /**

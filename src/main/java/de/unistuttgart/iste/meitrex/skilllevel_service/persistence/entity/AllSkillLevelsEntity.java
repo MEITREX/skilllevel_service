@@ -25,7 +25,7 @@ public class AllSkillLevelsEntity {
     /**
      * Current value of the skill, the average of all skill level types. Can range from 0 to 1.
      */
-    @Column(nullable = false)
+    @Column(table = "skill_levels", name = "skill_value", nullable = false)
     private float skillValue;
 
     @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval = true)

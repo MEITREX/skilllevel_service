@@ -37,6 +37,7 @@ type Query {
   _internal_noauth_skillLevelForUserBySkillIds(skillIds: [UUID!]!, userId: UUID!): [SkillLevels!]!
 
   _internal_noauth_skillsAllUsersStatsBySkillIds(skillIds: [UUID!]!): [SkillAllUsersStats!]!
+}
 
 type Mutation {
   """
@@ -55,6 +56,10 @@ type Mutation {
 The four skill level of a user.
 """
 type SkillLevels {
+  """
+  Current value of the skill, the average of all skill level types. Can range from 0 to 1.
+  """
+  skillValue: Float
   """
   remember represents how much user remember the concept
   """

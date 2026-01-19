@@ -57,6 +57,7 @@ class DeleteSkillLevelsOnCourseDeleteTest {
                 .apply(SkillLevelEntity.builder().value(0).build())
                 .evaluate(SkillLevelEntity.builder().value(0).build())
                 .create(SkillLevelEntity.builder().value(0).build())
+                .skillValue(0)
                 .build();
         repository.save(entity);
         SkillsForCourse course = SkillsForCourse.builder()
@@ -95,6 +96,7 @@ class DeleteSkillLevelsOnCourseDeleteTest {
                 .apply(SkillLevelEntity.builder().value(0).build())
                 .evaluate(SkillLevelEntity.builder().value(0).build())
                 .create(SkillLevelEntity.builder().value(0).build())
+                .skillValue(0)
                 .build();
         repository.save(entity);
         // test that the skill levels were stored in the database

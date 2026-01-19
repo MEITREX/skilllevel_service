@@ -23,8 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillValueEntity;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -113,8 +111,8 @@ public class SkillLevelService {
         }
         SkillAllUsersStatsEntity skillAllUsersStats = new SkillAllUsersStatsEntity();
         skillAllUsersStats.setSkillId(skillId);
-        skillAllUsersStats.setParticipantCount(skillValues.size());
-        if (skillValues.isEmpty()) {
+        skillAllUsersStats.setParticipantCount(skillLevels.size());
+        if (skillLevels.isEmpty()) {
             skillAllUsersStats.setSkillValueSum(0f);
         } else {
             skillAllUsersStats.setSkillValueSum(skillValueSum);

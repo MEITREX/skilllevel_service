@@ -4,7 +4,6 @@ import de.unistuttgart.iste.meitrex.common.user_handling.GlobalPermissionAccessV
 import de.unistuttgart.iste.meitrex.common.user_handling.LoggedInUser;
 import de.unistuttgart.iste.meitrex.generated.dto.SkillLevels;
 import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillAllUsersStatsEntity;
-import de.unistuttgart.iste.meitrex.skilllevel_service.persistence.entity.SkillValueEntity;
 import de.unistuttgart.iste.meitrex.skilllevel_service.service.SkillLevelService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
